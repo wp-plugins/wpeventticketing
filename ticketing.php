@@ -13,7 +13,7 @@ register_deactivation_hook(__FILE__, array("eventTicketingSystem", "deactivate")
 add_action('admin_init', array("eventTicketingSystem", "adminscripts"));
 add_action('wp_print_styles', array("eventTicketingSystem", "frontendscripts"));
 add_action('admin_menu', array("eventTicketingSystem", "options"));
-add_shortcode('eventTicketing', array("eventTicketingSystem", 'shortcode'));
+add_shortcode('wpeventticketing', array("eventTicketingSystem", 'shortcode'));
 add_action('template_redirect', array("eventTicketingSystem", "paypal"));
 
 class eventTicketingSystem
