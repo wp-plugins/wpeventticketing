@@ -8,7 +8,7 @@ Version: .1
 Author URI: http://9seeds.com/
 */
 
-register_activation_hook(__FILE__, array("eventTicketingSystem", "activate"));
+//register_activation_hook(__FILE__, array("eventTicketingSystem", "activate"));
 register_deactivation_hook(__FILE__, array("eventTicketingSystem", "deactivate"));
 add_action('admin_init', array("eventTicketingSystem", "adminscripts"));
 add_action('wp_print_styles', array("eventTicketingSystem", "frontendscripts"));
@@ -32,7 +32,9 @@ class eventTicketingSystem
 
 	function deactivate()
 	{
+		global $wpdb;
 		delete_option("eventTicketingSystem");
+		$wpdb->query("delete from {$wpdb->options} where option_name like 'package_%' OR option_name like 'ticket_%' OR option_name like 'coupon_%' OR option_name like 'paypal_%'");
 	}
 
 	function adminscripts()
@@ -51,8 +53,8 @@ class eventTicketingSystem
 
 	function options()
 	{
-		//add_options_page('Ticketing Options', 'Event Ticketing', 'manage_options', 'eventTicketingSystem', array("eventTicketingSystem","control"));
-		add_menu_page('Ticketing', 'Ticketing', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketHelp"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png');
+		add_menu_page('Ticketing', 'Ticketing', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png',30);
+		add_submenu_page('eventticketing', 'Reporting', 'Reporting', 'activate_plugins', 'eventticketing', array('eventTicketingSystem', 'ticketReporting'));
 		add_submenu_page('eventticketing', 'Ticket Options', 'Ticket Options', 'activate_plugins', 'ticketoptions', array('eventTicketingSystem', 'ticketOptionsControl'));
 		add_submenu_page('eventticketing', 'Tickets', 'Tickets', 'activate_plugins', 'tickettickets', array('eventTicketingSystem', 'ticketTicketsControl'));
 		add_submenu_page('eventticketing', 'Packages', 'Packages', 'activate_plugins', 'ticketpackages', array('eventTicketingSystem', 'ticketPackagesControl'));
@@ -62,7 +64,7 @@ class eventTicketingSystem
 		add_submenu_page('eventticketing', 'Messages', 'Messages', 'activate_plugins', 'ticketmessages', array('eventTicketingSystem', 'ticketMessagesControl'));
 	}
 
-	function ticketHelp()
+	function ticketReporting()
 	{
 		global $wpdb;
 		$o = get_option("eventTicketingSystem");
@@ -76,13 +78,14 @@ class eventTicketingSystem
 				$package[$v->displayName()]['money'] += $v->price;
 				foreach ($v->tickets as $t)
 				{
+					$t->orderDetails = $v->orderDetails;
 					$ticket[$t->displayName()]['count']++;
 					$attendee[$t->displayName()][] = $t;
+					//echo '<pre>'.print_r($t,true).'</pre>';exit;
 				}
 			}
 		}
 		$coupons = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'coupon_%'");
-		//echo '<pre>'.print_r($coupons,true).'</pre>';
 		if (is_array($coupons))
 		{
 			foreach ($coupons as $k => $v)
@@ -183,7 +186,7 @@ class eventTicketingSystem
 		//end counts table
 		echo '</div>';
 		echo '<div id="attendeeGraph">';
-		echo '<img src="http://chart.apis.google.com/chart?chs=300x150&cht=p3&chd=s:Mx&chdl=Sold|Left&chp=0.628&chl=' . $total . '|' . ($o["eventAttendance"] - $total) . '&chtt=Attendance">';
+		echo '<img src="http://chart.apis.google.com/chart?chs=300x150&cht=p3&chd=t:'.$total.','.($o["eventAttendance"]-$total).'&chdl=Sold|Left&chp=0.628&chl=' . $total . '|' . ($o["eventAttendance"] - $total) . '&chtt=Attendance">';
 		echo '</div>';
 		if (is_array($attendee))
 		{
@@ -193,13 +196,23 @@ class eventTicketingSystem
 			{
 				//filthy hack to display ticket info quickly
 				//should be moved into ticket and ticketOption objects
+
+				usort($v, array("eventTicketingSystem","ticketCmp"));
+
 				foreach ($v as $ticket)
 				{
+					$trtmp = array();
+					//populate the soldtime stuff in the display array
+					$th[$ticketType]['Sold Time'] = 'Sold Time';
+					$trtmp['Sold Time'] = date("m/d/Y H:i:s",$ticket->soldTime);
+
 					foreach ($ticket->ticketOptions as $o)
 					{
 						$th[$ticketType][$o->displayName] = $o->displayName;
 						$trtmp[$o->displayName] = $o->value;
 					}
+					$trtmp["final"] = $ticket->final;
+					$trtmp["orderdetails"] = $ticket->orderDetails;
 					$tr[] = $trtmp;
 				}
 			}
@@ -220,12 +233,22 @@ class eventTicketingSystem
 				$c = 0;
 				foreach ($tr as $data)
 				{
+					//print_r($data);exit;
 					$c++;
-					echo '<tr>';
-					echo '<td>' . $c . '</td>';
-					foreach ($headerkey as $key)
+					if(!$data["final"])
 					{
-						echo '<td>' . (strlen($data[$key]) ? $data[$key] : "&nbsp;") . '</td>';
+						echo '<tr style="background-color:LightPink;">';
+						echo '<td>' . $c . '</td>';
+						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
+					}
+					else
+					{
+						echo '<tr>';
+						echo '<td>' . $c . '</td>';
+						foreach ($headerkey as $key)
+						{
+							echo '<td>' . (strlen($data[$key]) ? $data[$key] : "&nbsp;") . '</td>';
+						}
 					}
 					echo '</tr>';
 				}
@@ -233,15 +256,6 @@ class eventTicketingSystem
 				echo '</table>';
 			}
 		}
-		/*
-		echo '<ul>';
-        echo '<li><h2>Step 1:</h2><br />Create all the options you want for each ticket. This is the information you would ask of each person attending your event such as personal info (name/address/phone) or shirt size or meal preference</li>';
-        echo '<li><h2>Step 2:</h2><br />Create a ticket and attach the options you want for that ticket. <strong>Add the options in the order you want them displayed on the form when someone purchases a ticket</strong><p style="font-style: italic;"><strong>Example:</strong> Create two types of tickets which are the same where one doesn\'t ask for shirt size since a shirt isn\'t included</p></li>';
-        echo '<li><h2>Step 3:</h2><br />Create a package and attach a ticket to it. This is where you determine the price for the event.<p style="font-style: italic;"><strong>Example:</strong> You have defined a single standard ticket called Regular. Attach Regular to the package with a quantity of 1, give it a price which is $10 less than full admission and give it an active date which will end a month before the event and a quantity of 50. With this you have created an early bird ticket which will expire either a month before the event occurs or when 50 of them are sold, whichever comes first<p style="font-style: italic;"><strong>Example:</strong> Create a package and attach Regular to the package with a quantity of 4 and give this package a price of $500. This would be like a sponsorship package where you are bundling some free tickets to go along with a sponsorship</li>';
-        echo '<li><h2>Step 4:</h2><br />Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantities if they are set. At no point will you sell more than this many tickets to the event.</li>';
-        echo '<li><h2>Step 5:</h2><br />Set your maximum paypal info. None of this is going to work if you cannot get paid. Follow <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">these instructions at Paypal</a> to get your API signature</li>';
-        echo '</ul>';
-		 */
 		echo '</div></div>';
 	}
 
@@ -314,7 +328,7 @@ class eventTicketingSystem
 			echo "</tr>";
 			echo "</tbody>";
 			echo "</table>";
-			echo "</div></div>";
+			echo '</div><div class="instructional">Create all the options you want for each ticket. This is the information you would ask of each person attending your event such as personal info (name/address/phone) or shirt size or meal preference</div></div>';
 		}
 
 		echo "<div id='ticket_new_options'>";
@@ -369,8 +383,6 @@ class eventTicketingSystem
 		{
 			echo '<div>
 				<input type="submit" class="button-primary" name="submitbutt" value="Add Ticket Option">
-			
-
 			</div>';
 		}
 		echo '</form>';
@@ -515,7 +527,7 @@ class eventTicketingSystem
 		}
 		echo "</div>";
 		echo '</form>';
-		echo "</div></div>";
+		echo '</div><div class="instructional">Create a ticket and attach the options you want for that ticket. <strong>Add the options in the order you want them displayed on the form when someone purchases a ticket</strong><p style="font-style: italic;"><strong>Example:</strong> Create two types of tickets which are the same where one doesn\'t ask for shirt size since a shirt isn\'t included</div></div>';
 	}
 
 	function ticketPackagesControl()
@@ -663,7 +675,7 @@ class eventTicketingSystem
 		}
 
 		echo '</form>';
-		echo '</div>';
+		echo '</div><div class="instructional">Create a package and attach a ticket to it. This is where you determine the price for the event.<p style="font-style: italic;"><strong>Example:</strong> You have defined a single standard ticket called Regular. Attach Regular to the package with a quantity of 1, give it a price which is $10 less than full admission and give it an active date which will end a month before the event and a quantity of 50. With this you have created an early bird ticket which will expire either a month before the event occurs or when 50 of them are sold, whichever comes first<p style="font-style: italic;"><strong>Example:</strong> Create a package and attach Regular to the package with a quantity of 4 and give this package a price of $500. This would be like a sponsorship package where you are bundling some free tickets to go along with a sponsorship</div>';
 		echo '</div>';
 
 	}
@@ -715,7 +727,7 @@ class eventTicketingSystem
 		echo "</tbody>";
 		echo "</table>";
 
-		echo "</div>";
+		echo '<div class="instructional">Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantities if they are set. At no point will you sell more than this many tickets to the event.</div></div>';
 	}
 
 	function ticketPaypalControl()
@@ -772,7 +784,7 @@ class eventTicketingSystem
 			
 		</form>';
 
-		echo '</div>';
+		echo '<div class="instructional">Set your paypal info. None of this is going to work if you cannot get paid. Follow <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">these instructions at Paypal</a> to get your API signature</div></div>';
 	}
 
 	function ticketCouponsControl()
@@ -869,7 +881,7 @@ class eventTicketingSystem
 			echo '<div class="wrap"><h2>Create New Coupon</h2></div><br /><a href="#" class="button" onclick="javascript:document.couponEdit.add.value=\'1\'; document.couponEdit.submit();return false;">Add New Coupon</a>';
 		}
 		echo '</form>';
-		echo '</div>';
+		echo '</div><div class="instructional">Coupons are codes you will create and attach to a package for a one time use to give to someone to turn in for a freebie. Owe someone a favor or have them pay you by check? Just generate a coupon and welcome them to the event!</div>';
 		echo '</div>';
 	}
 
@@ -923,7 +935,7 @@ class eventTicketingSystem
 				<td><textarea id="messageEmailBody" name="messageEmailBody" rows="10" cols="80"/>' . $o["messages"]["messageEmailBody"] . '</textarea></td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="messageEmailBcc">Email to BCC on orders:</label></th>
+				<th scope="row"><label for="messageEmailBcc">Organizers email for notifications:</label></th>
 				<td><input id="messageEmailBcc" type="text" name="messageEmailBcc" size="40" value="' . $o["messages"]["messageEmailBcc"] . '"></td>
 			</tr>
 			<tr valign="top">
@@ -931,7 +943,7 @@ class eventTicketingSystem
 			</tr>
 			</table>
 			</form>';
-		echo '</div>';
+		echo '<div class="instructional">This section controls the messages that your customers will see in email and on the screen as they purchase tickets to the event</div></div>';
 
 	}
 
@@ -1007,6 +1019,7 @@ class eventTicketingSystem
 						$packageHash = md5(microtime() . $i["packageid"]);
 						$package = clone $o["packageProtos"][$i["packageid"]];
 						$package->setPackageId($packageHash);
+						$package->setOrderDetails($order);
 
 						//get ticket proto from package and wipe proto from package
 						$t = array_shift($package->tickets);
@@ -1017,6 +1030,7 @@ class eventTicketingSystem
 							$ticketHash = md5(microtime() . $t->ticketId);
 							$ticket = clone $o["ticketProtos"][$t->ticketId];
 							$ticket->setTicketid($ticketHash);
+							$ticket->setSoldTime(time());
 							$package->addTicket($ticket);
 							add_option("ticket_" . $ticketHash, $packageHash);
 							$o["packageQuantities"]["totalTicketsSold"]++;
@@ -1027,10 +1041,9 @@ class eventTicketingSystem
 						add_option("package_" . $packageHash, $package);
 					}
 				}
-				echo '<div class="info">' . $o["messages"]["messageThankYou"] . '</div>';
-				echo '<div class="info">';
-				echo '<p>Your ticket ID(s) follow. If you have bought tickets for other people send them one of the links below so they can enter their information for the event, otherwise just click the link below to fill out your information for the event</p>';
-				echo '<ul>';
+				//echo '<div class="info">';
+				//echo '<p>Your ticket ID(s) follow. If you have bought tickets for other people send them one of the links below so they can enter their information for the event, otherwise just click the link below to fill out your information for the event</p>';
+				$replaceThankYou = '<ul>';
 				$c = 0;
 				$emaillinks = "\r\n";
 				foreach ($tickethashes as $hash)
@@ -1039,15 +1052,18 @@ class eventTicketingSystem
 					$url = get_permalink() . '?tickethash=' . $hash;
 					$href = '<a href="' . $url . '">' . $url . '</a>';
 					$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
-					echo '<li>Ticket ' . $c . ': ' . $href . '</li>';
+					$replaceThankYou .= '<li>Ticket ' . $c . ': ' . $href . '</li>';
 
 				}
-				echo '</ul>';
-				echo '</div>';
+				$replaceThankYou .= '</ul>';
+				
+				echo '<div class="info">' . str_replace('[ticketlinks]', $replaceThankYou, $o["messages"]["messageThankYou"]) . '</div>';
+				
 				$to = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
 				$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
-				$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
-				wp_mail($to, $o["messages"]["messageEmailSubj"], $o["messages"]["messageEmailBody"] . $emaillinks, $headers);
+				//$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
+				wp_mail($to, $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $headers);
+				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets'."\r\n\r\n", $headers);
 			}
 			else
 			{
@@ -1073,6 +1089,7 @@ class eventTicketingSystem
 					$packageHash = md5(microtime() . $i["packageid"]);
 					$package = clone $o["packageProtos"][$i["packageid"]];
 					$package->setPackageId($packageHash);
+					$package->setOrderDetails($order);
 
 					//get ticket proto from package and wipe proto from package
 					$t = array_shift($package->tickets);
@@ -1083,6 +1100,7 @@ class eventTicketingSystem
 						$ticketHash = md5(microtime() . $t->ticketId);
 						$ticket = clone $o["ticketProtos"][$t->ticketId];
 						$ticket->setTicketid($ticketHash);
+						$ticket->setSoldTime(time());
 						$package->addTicket($ticket);
 						add_option("ticket_" . $ticketHash, $packageHash);
 						$o["packageQuantities"]["totalTicketsSold"]++;
@@ -1361,6 +1379,14 @@ class eventTicketingSystem
 			}
 		}
 	}
+	function ticketCmp($a, $b)
+	{
+		if ($a->soldTime == $b->soldTime) 
+		{
+			return 0;
+		}
+		return ($a->soldTime < $b->soldTime) ? -1 : 1;
+	}
 }
 
 class ticketOption
@@ -1425,6 +1451,7 @@ class ticket
 	public $ticketOptions;
 	public $ticketId;
 	public $final;
+	public $soldTime;
 
 	function __construct($ticketOptions = array())
 	{
@@ -1526,6 +1553,10 @@ class ticket
 	{
 		$this->ticketId = $id;
 	}
+	public function setSoldTime($timeStamp)
+	{
+		$this->soldTime = $timeStamp;
+	}
 }
 
 class package
@@ -1539,6 +1570,7 @@ class package
 	public $price;
 	public $packageQuantity;
 	public $packageDescription;
+	public $orderDetails;
 
 	function __construct($tickets = array())
 	{
@@ -1637,6 +1669,11 @@ class package
 		{
 			return false;
 		}
+	}
+
+	public function setOrderDetails($p)
+	{
+		$this->orderDetails = $p;
 	}
 }
 
