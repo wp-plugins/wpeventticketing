@@ -8,8 +8,8 @@ Version: .1
 Author URI: http://9seeds.com/
 */
 
-//register_activation_hook(__FILE__, array("eventTicketingSystem", "activate"));
-register_deactivation_hook(__FILE__, array("eventTicketingSystem", "deactivate"));
+register_activation_hook(__FILE__, array("eventTicketingSystem", "activate"));
+//register_deactivation_hook(__FILE__, array("eventTicketingSystem", "deactivate"));
 add_action('admin_init', array("eventTicketingSystem", "adminscripts"));
 add_action('wp_print_styles', array("eventTicketingSystem", "frontendscripts"));
 add_action('admin_menu', array("eventTicketingSystem", "options"));
