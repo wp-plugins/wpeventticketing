@@ -1111,10 +1111,9 @@ class eventTicketingSystem
 					add_option("package_" . $packageHash, $package);
 				}
 			}
-			echo '<div class="info">' . $o["messages"]["messageThankYou"] . '</div>';
-			echo '<div class="info">';
-			echo '<p>Your ticket ID(s) follow. If you have bought tickets for other people send them one of the links below so they can enter their information for the event, otherwise just click the link below to fill out your information for the event</p>';
-			echo '<ul>';
+			//echo '<div class="info">';
+			//echo '<p>Your ticket ID(s) follow. If you have bought tickets for other people send them one of the links below so they can enter their information for the event, otherwise just click the link below to fill out your information for the event</p>';
+			$replaceThankYou = '<ul>';
 			$c = 0;
 			$emaillinks = "\r\n";
 			foreach ($tickethashes as $hash)
@@ -1123,15 +1122,18 @@ class eventTicketingSystem
 				$url = get_permalink() . '?tickethash=' . $hash;
 				$href = '<a href="' . $url . '">' . $url . '</a>';
 				$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
-				echo '<li>Ticket ' . $c . ': ' . $href . '</li>';
+				$replaceThankYou .= '<li>Ticket ' . $c . ': ' . $href . '</li>';
 
 			}
-			echo '</ul>';
-			echo '</div>';
-			$to = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
+			$replaceThankYou .= '</ul>';
+			
+			echo '<div class="info">' . str_replace('[ticketlinks]', $replaceThankYou, $o["messages"]["messageThankYou"]) . '</div>';
+			
+			$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
-			wp_mail($to, $o["messages"]["messageEmailSubj"], $o["messages"]["messageEmailBody"] . $emaillinks, $headers);
+			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
+			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets'."\r\n\r\n", $headers);
 
 			$o["coupons"][$_REQUEST["couponCode"]]["used"] = true;
 			update_option('eventTicketingSystem', $o);
