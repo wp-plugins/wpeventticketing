@@ -727,7 +727,7 @@ class eventTicketingSystem
 		echo "</tbody>";
 		echo "</table>";
 
-		echo '<div class="instructional">Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantities if they are set. At no point will you sell more than this many tickets to the event.</div></div>';
+		echo '<div class="instructional">Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantites if they are set. At no point will you sell more than this many tickets to the event.</div></div>';
 	}
 
 	function ticketPaypalControl()
@@ -1061,7 +1061,7 @@ class eventTicketingSystem
 				
 				$to = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
 				$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
-				//$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
+				$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 				wp_mail($to, $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $headers);
 				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets'."\r\n\r\n", $headers);
 			}
@@ -1206,7 +1206,7 @@ class eventTicketingSystem
 			echo '<div>Name: <input name="packagePurchaseName" size="25" value="' . $_REQUEST["packagePurchaseName"] . '"> Email: <input name="packagePurchaseEmail" size="25" value="' . $_REQUEST["packagePurchaseEmail"] . '"></div>';
 			echo '<div id="packages">';
 			echo '<table>';
-			echo '<tr><th>Quantitiy</th><th>Price</th>';
+			echo '<tr><th>Quantity</th><th>Price</th>';
 			if ($o["displayPackageQuantity"])
 			{
 				echo '<th>Quantity Remaining</th>';
@@ -1469,13 +1469,13 @@ class ticket
 
 	public function displayName()
 	{
-		return ($this->ticketName == '' ? 'Unamed' : $this->ticketName);
+		return ($this->ticketName == '' ? 'Unnamed' : $this->ticketName);
 	}
 
 	public function displayFull()
 	{
 		echo '<div id="eventTicket">';
-		echo '<div class="ticketName">' . ($this->ticketName == '' ? 'Unamed' : $this->ticketName) . '</div>';
+		echo '<div class="ticketName">' . ($this->ticketName == '' ? 'Unnamed' : $this->ticketName) . '</div>';
 		/*
 
 				  echo '<div>';
@@ -1621,7 +1621,7 @@ class package
 
 	public function displayName()
 	{
-		return ($this->packageName == '' ? 'Unamed' : $this->packageName);
+		return ($this->packageName == '' ? 'Unnamed' : $this->packageName);
 	}
 
 	public function setDisplayName($display)
