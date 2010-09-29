@@ -4,7 +4,7 @@ Plugin Name: Event Ticketing System
 Plugin URI: http://9seeds.com/
 Description: Sell tickets for an event
 Author: 9seeds
-Version: .3
+Version: .4
 Author URI: http://9seeds.com/
 */
 
