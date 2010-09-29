@@ -1258,8 +1258,8 @@ class eventTicketingSystem
 					echo '</tr>';
 				}
 			}
-			echo '<tr><td>Coupon Code</td><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "3" : "2") . '"><input class="input" name="couponCode"><input type="submit" name="couponSubmitButton" value="Apply Coupon"></td></tr>';
-			echo '<tr><td colspan="2"><input type="image" src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"></td><td id="purchaseinfo" colspan="' . ($o["displayPackageQuantity"] == 1 ? "2" : "1") . '">Chose your tickets and pay for them at PayPal. You will fill in your ticket information after your purchase is completed</td></tr>';
+			echo '<tr><td>Coupon Code: <input class="input" name="couponCode"></td><td><input type="submit" name="couponSubmitButton" value="Apply Coupon"></td><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "2" : "1") . '">&nbsp;</td></tr>';
+			echo '<tr><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "4" : "3") . '"><input type="image" src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"><div id="purchaseinfo" >Chose your tickets and pay for them at PayPal. You will fill in your ticket information after your purchase is completed</div></td></tr>';
 			echo '</table>';
 			echo '</div>';
 			echo '</form>';
