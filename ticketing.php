@@ -795,20 +795,33 @@ class eventTicketingSystem
 		if (wp_verify_nonce($_POST['couponEditNonce'], plugin_basename(__FILE__)))
 		{
 			//echo '<pre>'.print_r($_REQUEST,true).'</pre>';
-			if (is_numeric($_REQUEST["packageId"]) && strlen($_REQUEST["couponCode"]) && $_REQUEST["submitbutt"] == 'Save Coupon')
+			if(is_array($_REQUEST["coupon"]))
 			{
-				$o["coupons"][$_REQUEST["couponCode"]] = array("couponCode" => $_REQUEST["couponCode"], "packageId" => $_REQUEST["packageId"], "used" => $_REQUEST["couponUsed"]);
-				update_option("eventTicketingSystem", $o);
-				echo '<div id="message" class="updated"><p>Coupon saved.</p></div>';
+				$saved = 0;
+				foreach($_REQUEST["coupon"] as $k => $v)
+				{
+					if (is_numeric($v["packageId"]) && strlen($v["couponCode"]) && is_numeric($v["couponAmount"]))
+					{
+						$o["coupons"][$v["couponCode"]] = array("couponCode" => $v["couponCode"], "packageId" => $v["packageId"], "uses" => $v["couponUses"], "type"=>$v["couponType"], "amt"=>$v["couponAmount"], "used"=>$v["couponUsed"]);
+						$saved++;
+					}
+				}
+				if($saved)
+				{
+					update_option("eventTicketingSystem", $o);
+					echo '<div id="message" class="updated"><p>'.$saved.' coupons saved.</p></div>';
+				}
 			}
 			if ($_REQUEST["add"] == 1)
 			{
-				$coupon = array("couponCode" => '', "packageId" => '', "used" => '');
+				for($i = 1; $i < 11; $i++)
+				{
+					$coupon[] = array("couponCode" => '', "packageId" => '', "used" => '');
+				}
 			}
 			if (strlen($_REQUEST["edit"]))
 			{
-				$coupon = $o["coupons"][$_REQUEST["edit"]];
-
+				$coupon[] = $o["coupons"][$_REQUEST["edit"]];
 			}
 			if (strlen($_REQUEST["del"]))
 			{
@@ -828,17 +841,21 @@ class eventTicketingSystem
 			echo "<tr>";
 			echo "<th>Existing Coupons</th>";
 			echo "<th>For Package</th>";
+			echo "<th>Type</th>";
+			echo "<th>Uses Left</th>";
 			echo "<th>Used</th>";
 			echo "<th>Actions</th>";
 			echo "</tr>";
 			echo "</thead>";
 			echo "<tbody>";
-			foreach ($o["coupons"] as $packageId => $v)
+			foreach ($o["coupons"] as $couponid => $v)
 			{
 				echo "<tr>";
 				echo '<td>' . $v["couponCode"] . '</td>';
 				echo '<td>' . $o["packageProtos"][$v["packageId"]]->displayName() . '</td>';
-				echo '<td>' . ($v["used"] ? "Yes" : "No") . '</td>';
+				echo '<td>'.($v["type"] == "flat" ? "$".$v["amt"] : $v["amt"]."%").'</td>';
+				echo '<td>' . $v["uses"] . '</td>';
+				echo '<td>' . $v["used"] . '</td>';
 				echo '<td><a href="#" onclick="javascript:document.couponEdit.edit.value=\'' . $v["couponCode"] . '\'; document.couponEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.couponEdit.del.value=\'' . $v["couponCode"] . '\';if (confirm(\'Are you sure you want to delete this coupon\')) document.couponEdit.submit();return false;">Delete</a></td>';
 				echo "</tr>";
 			}
@@ -856,25 +873,39 @@ class eventTicketingSystem
 		<input type="hidden" name="del" value="" />';
 		if (isset($coupon))
 		{
-			if (strlen($coupon["couponCode"]))
+			if (strlen($coupon[0]["couponCode"]))
 			{
 				echo '<div class="wrap"><h2>Update Coupon</h2></div>';
 			}
 			else
 			{
-				echo '<div class="wrap"><h2>Add Coupon</h2></div>';
+				echo '<div class="wrap"><h2>Add Coupons</h2></div>';
 			}
+			
 			echo '<table class="form-table">';
-			echo '<tr><td>Coupon Code</td><td><input name="couponCode" value="' . $coupon["couponCode"] . '"></td></tr>';
-			echo '<tr><td>For Package</td><td>
-				<select name="packageId">';
-			foreach ($o["packageProtos"] as $pk => $pv)
+			echo '<thead>';
+			echo '<tr><th>Code</th><th>Package</th><th>Type</th><th>Amount</th><th>Uses</th></tr>';
+			echo '</thead>';
+			echo '<tbody>';
+			foreach($coupon as $ck => $cv)
 			{
-				echo '<option value="' . $pk . '" ' . ($coupon["packageId"] == $pk ? "selected" : "") . '>' . $pv->displayName() . '</option>';
+				echo '<tr>';
+				echo '<td><input name="coupon['.$ck.'][couponCode]" value="'.$cv["couponCode"].'"></td>';
+				echo '<td>
+					<select name="coupon['.$ck.'][packageId]">';
+				foreach ($o["packageProtos"] as $pk => $pv)
+				{
+					echo '<option value="'.$pk.'" '.($cv["packageId"] == $pk ? "selected" : "").'>'.$pv->displayName().'</option>';
+				}
+				echo '</select></td>';
+				echo '<td><select name="coupon['.$ck.'][couponType]"><option value="flat" '.($cv["type"] == "flat" ? "selected" : "").'>Flat Rate</option><option value="percent" '.($cv["type"] == "percent" ? "selected" : "").'>Percentage</option></select></td>';
+				echo '<td><input name="coupon['.$ck.'][couponAmount]" value="'.$cv["amt"].'" size="5"></td>';
+				echo '<td><input name="coupon['.$ck.'][couponUses]" size="2" value="'.$cv["uses"].'"></td>';
+				echo '<input type="hidden" name="coupon['.$ck.'][couponUsed]" value="'.(int)$cv["used"].'">';
+				echo '</tr>';
 			}
-			echo '</select></td></tr>';
-			echo '<tr><td>Used</td><td><input type="checkbox" name="couponUsed" value="1" ' . ($coupon["used"] == 1 ? "checked" : "") . '></td></tr>';
-			echo '<tr><td colspan="2"><input type="submit" class="button" name="submitbutt" value="Save Coupon"></td></tr>';
+			echo '</tbody>';
+			echo '<tr><td colspan="5"><input type="submit" class="button" name="submitbutt" value="Save Coupon"></td></tr>';
 			echo '</table>';
 		}
 		else
@@ -951,58 +982,59 @@ class eventTicketingSystem
 	function shortcode()
 	{
 		$o = get_option("eventTicketingSystem");
-		/*	
-		foreach($o as $k => $v)
-		{
-			if(in_array($k, array('ticketOptions',
-			'ticketProtos',
-			'packageProtos',
-			'eventAttendance',
-			'messages',
-			'displayPackageQuantity')))
-			$out[$k] = $v;
-		}
-        $path = WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/ticketing.ser';
-		var_dump(file_put_contents($path,serialize($out)));
-		exit;
-        */
 		ob_start();
 
 		//return redirect from paypal
 		//token=EC-4DR89227KU882313S&PayerID=5SYRSDFCC4Z56
-		if (isset($_REQUEST["token"]) && isset($_REQUEST["PayerID"]) && strlen($_REQUEST["token"]) == 20 && strlen($_REQUEST["PayerID"]) == 13)
+		if ((isset($_REQUEST["token"]) && isset($_REQUEST["PayerID"]) && strlen($_REQUEST["token"]) == 20 && strlen($_REQUEST["PayerID"]) == 13) || (isset($_REQUEST["couponSubmitNonce"]) && wp_verify_nonce($_REQUEST['couponSubmitNonce'], plugin_basename(__FILE__))))
 		{
-			//get order details to send to paypal...again
-			$order = get_option("paypal_" . $_REQUEST["token"]);
-			$total = number_format($order["total"], 2);
-			$item = $order["items"];
-
-			include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/nvp.php');
-			include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/paypal.php');
-			$p = $o["paypalInfo"];
-
-			$method = "DoExpressCheckoutPayment";
-			$cred = array("apiuser" => $p["paypalAPIUser"], "apipwd" => $p["paypalAPIPwd"], "apisig" => $p["paypalAPISig"]);
-			$env = $p["paypalEnv"];
-			$nvp = array('PAYMENTREQUEST_0_AMT' => $total,
-			             'TOKEN' => $_REQUEST["token"],
-			             "PAYERID" => $_REQUEST["PayerID"],
-			             "PAYMENTREQUEST_0_PAYMENTACTION" => 'Sale',
-			             "PAYMENTREQUEST_0_CURRENCYCODE" => 'USD',
-			);
-			foreach ($item as $k => $i)
+			if(!isset($_REQUEST['couponSubmitNonce']))
 			{
-				//$nvp['L_PAYMENTREQUEST_0_NAME' . $k] = $i["name"];
-				$nvp['L_PAYMENTREQUEST_0_NAME' . $k] = $o["messages"]["messageEventName"] . ": Registration";
-				$nvp['L_PAYMENTREQUEST_0_DESC' . $k] = $i["desc"];
-				$nvp['L_PAYMENTREQUEST_0_AMT' . $k] = $i["price"];
-				$nvp['L_PAYMENTREQUEST_0_QTY' . $k] = $i["quantity"];
+				//get order details to send to paypal...again
+				$order = get_option("paypal_" . $_REQUEST["token"]);
+				$total = number_format($order["total"], 2);
+				$item = $order["items"];
+
+				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/nvp.php');
+				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/paypal.php');
+				$p = $o["paypalInfo"];
+
+				$method = "DoExpressCheckoutPayment";
+				$cred = array("apiuser" => $p["paypalAPIUser"], "apipwd" => $p["paypalAPIPwd"], "apisig" => $p["paypalAPISig"]);
+				$env = $p["paypalEnv"];
+				$nvp = array('PAYMENTREQUEST_0_AMT' => $total,
+							'TOKEN' => $_REQUEST["token"],
+							"PAYERID" => $_REQUEST["PayerID"],
+							"PAYMENTREQUEST_0_PAYMENTACTION" => 'Sale',
+							"PAYMENTREQUEST_0_CURRENCYCODE" => 'USD',
+				);
+				foreach ($item as $k => $i)
+				{
+					//$nvp['L_PAYMENTREQUEST_0_NAME' . $k] = $i["name"];
+					$nvp['L_PAYMENTREQUEST_0_NAME' . $k] = $o["messages"]["messageEventName"] . ": Registration";
+					$nvp['L_PAYMENTREQUEST_0_DESC' . $k] = substr($i["desc"],0,127);
+					$nvp['L_PAYMENTREQUEST_0_AMT' . $k] = $i["price"];
+					$nvp['L_PAYMENTREQUEST_0_QTY' . $k] = $i["quantity"];
+				}
+				$nvp['PAYMENTREQUEST_0_ITEMAMT'] = $total;
+
+				$nvpStr = nvp($nvp);
+
+				$resp = PPHttpPost($method, $nvpStr, $cred, $env);
 			}
-			$nvp['PAYMENTREQUEST_0_ITEMAMT'] = $total;
+			else
+			{
+				$order = get_option("coupon_" . $_REQUEST["couponSubmitNonce"]);
+				if(!$order)
+				{
+					echo '<div class="ticketingerror">That coupon has already been used</div>';
+					return(false);
+				}
+				//remove option so it can't be used again
+				delete_option("coupon_" . $_REQUEST["couponSubmitNonce"]);
+				$resp["ACK"] = 'Success';
+			}
 
-			$nvpStr = nvp($nvp);
-
-			$resp = PPHttpPost($method, $nvpStr, $cred, $env);
 			if (isset($resp["ACK"]) && $resp["ACK"] == 'Success')
 			{
 				if (!isset($o["packageQuantities"]["totalTicketsSold"]))
@@ -1013,6 +1045,15 @@ class eventTicketingSystem
 				{
 					$o["packageQuantities"][$_REQUEST["packageId"]] = 0;
 				}
+				
+				//check for special packages in the session...err...transient thing
+				$transient = get_transient($_COOKIE["event-ticketing-cookie"]);
+				if($transient)
+				{
+					$o["packageProtos"][$transient->packageId] = $transient;
+					delete_transient($_COOKIE["event-ticketing-cookie"]);
+				}
+	
 				foreach ($order["items"] as $i)
 				{
 					for ($x = 1; $x <= $i["quantity"]; $x++)
@@ -1021,6 +1062,21 @@ class eventTicketingSystem
 						$package = clone $o["packageProtos"][$i["packageid"]];
 						$package->setPackageId($packageHash);
 						$package->setOrderDetails($order);
+						
+						//register coupon use if there was a coupon used
+						if(isset($package->coupon) && isset($o["coupons"][$package->coupon["couponCode"]]))
+						{
+							if(!isset($o["coupons"][$package->coupon["couponCode"]]["used"]))
+							{
+								$o["coupons"][$package->coupon["couponCode"]]["used"] = 0;
+							}
+							
+							$o["coupons"][$package->coupon["couponCode"]]["used"]++;
+							$o["coupons"][$package->coupon["couponCode"]]["uses"]--;
+							
+							//filthy hack to check for couponed packages and getting them accounted for properly
+							$i["packageid"] = $package->coupon["packageId"];
+						}
 
 						//get ticket proto from package and wipe proto from package
 						$t = array_shift($package->tickets);
@@ -1038,12 +1094,20 @@ class eventTicketingSystem
 							$tickethashes[] = $ticketHash;
 						}
 						$o["packageQuantities"][$i["packageid"]]++;
-						update_option("eventTicketingSystem", $o);
 						add_option("package_" . $packageHash, $package);
 					}
+					
+					//if there's a temporary package lying around don't store it permanently
+					if($transient)
+					{
+						unset($o["packageProtos"][$transient->packageId]);
+					}
+					
+					//store packagequenitites and tickets sold
+					//should probably be in a different option
+					update_option("eventTicketingSystem", $o);
 				}
-				//echo '<div class="info">';
-				//echo '<p>Your ticket ID(s) follow. If you have bought tickets for other people send them one of the links below so they can enter their information for the event, otherwise just click the link below to fill out your information for the event</p>';
+				
 				$replaceThankYou = '<ul>';
 				$c = 0;
 				$emaillinks = "\r\n";
@@ -1070,74 +1134,6 @@ class eventTicketingSystem
 			{
 				echo '<div class="ticketingerror">There was an error from PayPal<br />Error: <strong>' . urldecode($resp["L_LONGMESSAGE0"]) . '</strong></div>';
 			}
-		}
-		elseif (wp_verify_nonce($_REQUEST['couponSubmitNonce'], plugin_basename(__FILE__)) && $_REQUEST["couponCode"] && is_numeric($_REQUEST["packageId"]))
-		{
-			$order = get_option('coupon_' . $_REQUEST["couponCode"]);
-			if (!isset($o["packageQuantities"]["totalTicketsSold"]))
-			{
-				$o["packageQuantities"]["totalTicketsSold"] = 0;
-			}
-			if (!isset($o["packageQuantities"][$_REQUEST["packageId"]]))
-			{
-				$o["packageQuantities"][$_REQUEST["packageId"]] = 0;
-			}
-
-			foreach ($order["items"] as $i)
-			{
-				for ($x = 1; $x <= $i["quantity"]; $x++)
-				{
-					$packageHash = md5(microtime() . $i["packageid"]);
-					$package = clone $o["packageProtos"][$i["packageid"]];
-					$package->setPackageId($packageHash);
-					$package->setOrderDetails($order);
-
-					//get ticket proto from package and wipe proto from package
-					$t = array_shift($package->tickets);
-
-					for ($y = 1; $y <= $package->ticketQuantity; $y++)
-					{
-						//create tickets and attach them to real package
-						$ticketHash = md5(microtime() . $t->ticketId);
-						$ticket = clone $o["ticketProtos"][$t->ticketId];
-						$ticket->setTicketid($ticketHash);
-						$ticket->setSoldTime(time());
-						$package->addTicket($ticket);
-						add_option("ticket_" . $ticketHash, $packageHash);
-						$o["packageQuantities"]["totalTicketsSold"]++;
-						$tickethashes[] = $ticketHash;
-					}
-					$o["packageQuantities"][$i["packageid"]]++;
-					update_option("eventTicketingSystem", $o);
-					add_option("package_" . $packageHash, $package);
-				}
-			}
-			//echo '<div class="info">';
-			//echo '<p>Your ticket ID(s) follow. If you have bought tickets for other people send them one of the links below so they can enter their information for the event, otherwise just click the link below to fill out your information for the event</p>';
-			$replaceThankYou = '<ul>';
-			$c = 0;
-			$emaillinks = "\r\n";
-			foreach ($tickethashes as $hash)
-			{
-				$c++;
-				$url = get_permalink() . '?tickethash=' . $hash;
-				$href = '<a href="' . $url . '">' . $url . '</a>';
-				$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
-				$replaceThankYou .= '<li>Ticket ' . $c . ': ' . $href . '</li>';
-
-			}
-			$replaceThankYou .= '</ul>';
-			
-			echo '<div class="info">' . str_replace('[ticketlinks]', $replaceThankYou, $o["messages"]["messageThankYou"]) . '</div>';
-			
-			$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
-			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
-			$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
-			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
-			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets'."\r\n\r\n", $headers);
-
-			$o["coupons"][$_REQUEST["couponCode"]]["used"] = true;
-			update_option('eventTicketingSystem', $o);
 		}
 		elseif (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32)
 		{
@@ -1203,18 +1199,29 @@ class eventTicketingSystem
 				echo '<div class="ticketingerror">' . $_SESSION["ticketingError"] . '</div>';
 				unset($_SESSION["ticketingError"]);
 			}
+			//check for special packages in the session...err...transient thing
+			//echo '<pre>'.print_r($_SESSION,true).'</pre>';
+			$transient = get_transient($_COOKIE["event-ticketing-cookie"]);
+			if($transient instanceof package)
+			{
+				$o["packageProtos"][$transient->packageId] = $transient;
+			}
+			
 			echo '<form action="" method="post">';
 			echo '<input type="hidden" name="packagePurchaseNonce" id="packagePurchaseNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
 			echo '<div>Please enter a name and email address for your confirmation and tickets</div>';
 			echo '<div>Name: <input name="packagePurchaseName" size="25" value="' . $_REQUEST["packagePurchaseName"] . '"> Email: <input name="packagePurchaseEmail" size="25" value="' . $_REQUEST["packagePurchaseEmail"] . '"></div>';
 			echo '<div id="packages">';
 			echo '<table>';
-			echo '<tr><th>Quantity</th><th>Price</th>';
+			echo '<tr>';
+			echo '<th>Description</th>';
+			echo '<th>Price</th>';
 			if ($o["displayPackageQuantity"])
 			{
 				echo '<th>Quantity Remaining</th>';
 			}
-			echo '<th>Description</th></tr>';
+			echo '<th>Quantity</th>';
+			echo '</tr>';
 			foreach ($o["packageProtos"] as $k => $v)
 			{
 				//determine remaining tickets so we don't display selectors that allow too many tickets to be sold
@@ -1231,22 +1238,23 @@ class eventTicketingSystem
 					$packageRemaining = floor($totalRemaining / $v->ticketQuantity);
 					$packageCounter = $packageRemaining > 10 ? 10 : $packageRemaining;
 				}
+				//echo $v->packageId."::".$packageCounter."<br>";
 
 				if ($packageCounter > 0 && $v->validDates())
 				{
 					echo '<tr>';
+					echo '<td><div class="packagename"><strong>' . $v->packageName . '</strong></div><div class="packagedescription">' . $v->packageDescription . '</div></td>';
+					echo '<td>$' . number_format($v->price, "2") . '</td>';
+					if ($o["displayPackageQuantity"])
+					{
+						echo '<td>' . $packageRemaining . ' left</td>';
+					}
 					echo '<td><select name="packagePurchase[' . $v->packageId . ']">';
 					for ($i = 0; $i <= $packageCounter; $i++)
 					{
 						echo '<option>' . $i . '</option>';
 					}
 					echo '</select></td>';
-					echo '<td>$' . number_format($v->price, "2") . '</td>';
-					if ($o["displayPackageQuantity"])
-					{
-						echo '<td>' . $packageRemaining . ' left</td>';
-					}
-					echo '<td><div class="packagename">' . $v->packageName . '</div><div class="packagedescription">' . $v->packageDescription . '</div></td>';
 					echo '</tr>';
 				}
 			}
@@ -1262,6 +1270,7 @@ class eventTicketingSystem
 	function paypal()
 	{
 		$o = get_option("eventTicketingSystem");
+		
 		//check order and build for later retrieval
 		if (wp_verify_nonce($_POST['packagePurchaseNonce'], plugin_basename(__FILE__)))
 		{
@@ -1274,17 +1283,35 @@ class eventTicketingSystem
 			{
 				if (is_array($o["coupons"][$_REQUEST["couponCode"]]) && $o["coupons"][$_REQUEST["couponCode"]]["used"] == false && is_numeric($o["coupons"][$_REQUEST["couponCode"]]["packageId"]))
 				{
-					$packageId = $o["coupons"][$_REQUEST["couponCode"]]["packageId"];
-					$couponCode = $_REQUEST["couponCode"];
-					$couponSubmitNonce = wp_create_nonce(plugin_basename(__FILE__));
-					$item[] = array("quantity" => 1,
-					                "name" => $o["packageProtos"][$packageId]->displayName(),
-					                "desc" => $o["packageProtos"][$packageId]->packageDescription,
-					                "price" => 0,
-					                "packageid" => $packageId);
-					add_option('coupon_' . $couponCode, array("items" => $item, "email" => $_REQUEST["packagePurchaseEmail"], "name" => $_REQUEST["packagePurchaseName"]));
-					header('Location: ' . get_permalink() . '?packageId=' . $packageId . '&couponCode=' . $couponCode . '&couponSubmitNonce=' . $couponSubmitNonce);
-					exit;
+					$coupon = $o["coupons"][$_REQUEST["couponCode"]];
+					if($coupon["uses"] <= 0)
+					{
+						$_SESSION["ticketingError"] = 'That coupon has already been used the maximum number of times';
+						return(false);
+					}
+
+					//echo "<pre>";print_r($coupon);exit;
+					$package = clone $o["packageProtos"][$coupon["packageId"]];
+					if($coupon["type"] == 'flat')
+					{
+						$package->price = $package->price - $coupon["amt"];
+					}
+					elseif($coupon["type"] == 'percent')
+					{
+						$package->price = $package->price*(1-($coupon["amt"]/100));
+					}
+					$package->packageDescription = '**discounted** '.$package->packageDescription;
+					$package->setExpire(array("start"=>date("m/d/Y",strtotime("-1 days")),"end"=>date("m/d/Y",strtotime("+1 days"))));
+					//set package id to something unlikely to happen in normal operation
+					$package->setPackageId(424242);
+					$package->setPackageQuantity(1);
+					$package->setCoupon($coupon);
+			
+					$cookieVal = md5(microtime().rand(0,100));					
+					setcookie("event-ticketing-cookie", $cookieVal, time()+3600);
+					$_COOKIE["event-ticketing-cookie"] = $cookieVal;
+					set_transient($cookieVal,$package,3600);
+					return(true);
 				}
 				else
 				{
@@ -1292,7 +1319,14 @@ class eventTicketingSystem
 					return (false);
 				}
 			}
-
+			
+			//check for coupon package in the session...err...transient thing
+			$transient = get_transient($_COOKIE["event-ticketing-cookie"]);
+			if($transient instanceof package)
+            {
+				$o["packageProtos"][$transient->packageId] = $transient;
+            }
+				
 			$somethingpurchased = $total = 0;
 			foreach ($_REQUEST["packagePurchase"] as $packageId => $quantity)
 			{
@@ -1308,6 +1342,7 @@ class eventTicketingSystem
 					);
 				}
 			}
+            
 
 			//was something purchased?
 			if ($somethingpurchased == 0)
@@ -1318,7 +1353,16 @@ class eventTicketingSystem
 			{
 				//check to see if value is $0 due to a discount code or something
 				//do something here
-
+				if($total <= 0)
+				{
+					$couponSubmitNonce = wp_create_nonce(plugin_basename(__FILE__));
+					
+					add_option('coupon_' . $couponSubmitNonce, array("items" => $item, "email" => $_REQUEST["packagePurchaseEmail"], "name" => $_REQUEST["packagePurchaseName"]));
+					
+					header('Location: ' . get_permalink() . '?couponSubmitNonce=' . $couponSubmitNonce);
+					exit;
+				}
+				
 				//looks like we got a submit with some values, let's redirect to paypal
 				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/nvp.php');
 				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/paypal.php');
@@ -1341,7 +1385,7 @@ class eventTicketingSystem
 					{
 						//$nvp['L_PAYMENTREQUEST_0_NAME' . $k] = $i["name"];
 						$nvp['L_PAYMENTREQUEST_0_NAME' . $k] = $o["messages"]["messageEventName"] . ": Registration";
-						$nvp['L_PAYMENTREQUEST_0_DESC' . $k] = $i["desc"];
+						$nvp['L_PAYMENTREQUEST_0_DESC' . $k] = substr($i["desc"],0,127);
 						$nvp['L_PAYMENTREQUEST_0_AMT' . $k] = $i["price"];
 						$nvp['L_PAYMENTREQUEST_0_QTY' . $k] = $i["quantity"];
 					}
@@ -1574,6 +1618,7 @@ class package
 	public $packageQuantity;
 	public $packageDescription;
 	public $orderDetails;
+	public $coupon;
 
 	function __construct($tickets = array())
 	{
@@ -1677,6 +1722,11 @@ class package
 	public function setOrderDetails($p)
 	{
 		$this->orderDetails = $p;
+	}
+	
+	public function setCoupon($coupon)
+	{
+		$this->coupon = $coupon;
 	}
 }
 
