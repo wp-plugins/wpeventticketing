@@ -99,6 +99,7 @@ class eventTicketingSystem
 			}
 		}
 
+		
 		$pTotal = $cTotal = 0;
 
 
@@ -188,10 +189,9 @@ class eventTicketingSystem
 		echo '<div id="attendeeGraph">';
 		echo '<img src="http://chart.apis.google.com/chart?chs=300x150&cht=p3&chd=t:'.$total.','.($o["eventAttendance"]-$total).'&chdl=Sold|Left&chp=0.628&chl=' . $total . '|' . ($o["eventAttendance"] - $total) . '&chtt=Attendance">';
 		echo '</div>';
+		
 		if (is_array($attendee))
 		{
-			echo '<div id="ticket_sales_bottom">';
-			echo '<div id="icon-users" class="icon32"></div><h2>Attendees</h2>';
 			foreach ($attendee as $ticketType => $v)
 			{
 				//filthy hack to display ticket info quickly
@@ -217,6 +217,51 @@ class eventTicketingSystem
 					$tr[] = $trtmp;
 				}
 			}
+			echo '<div id="summary_reports_left">';
+			echo '<div id="icon-users" class="icon32"></div><h2>Summary Reports</h2>';
+			foreach($th as $hk=> $hv)
+			{
+				foreach($hv as $kk => $vv)
+				{
+					if($kk == 'Sold Time')
+						continue;
+					$summaryType[$kk] = 1;
+				}
+			}
+			if(strlen($_GET["summary"]))
+			{
+				$s = urldecode($_GET["summary"]);
+				echo '<table class="widefat">';
+				echo '<thead>';
+				echo '<tr><th>'.$s.'</th><th>Count</th></tr>';
+				echo '</thead>';
+				echo '<tbody>';
+				foreach($tr as $to)
+				{
+					$summary[$to[$s]]++;
+				}
+				foreach($summary as $o => $count)
+				{
+					echo '<tr><td>'.$o.'</td><td>'.$count.'</td></tr>';
+				}
+				echo '</tbody>';
+				echo '</table>';
+			}
+			echo '<table class="widefat">';
+			echo '<thead>';
+			echo '<tr><th>Summarize by...</th></tr>';
+			echo '</thead>';
+			echo '<tbody>';
+			foreach($summaryType as $kk => $vv)
+			{
+				echo '<tr><td><a href="'.admin_url("admin.php?page=eventticketing&summary=".urlencode($kk)).'">'.$kk.'</a></td></tr>';
+			}
+			echo '</tbody>';
+			echo '</table>';
+			echo '</div>';
+			
+			echo '<div id="ticket_sales_bottom">';
+			echo '<div id="icon-users" class="icon32"></div><h2>Attendees</h2>';
 			foreach ($th as $k => $v)
 			{
 				echo "<table class='widefat'>";

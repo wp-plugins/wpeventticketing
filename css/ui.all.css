@@ -109,13 +109,17 @@ width: 50%;
 
 }
 
-#attendeeGraph {
+#summary_reports_left {
+clear: both;
+float: left;
+width: 50%;
+}
 
+#attendeeGraph {
 width: 40%;
 padding-top: 52px;
 float: left;
 margin-left: 30px;
-
 }
 
 #attendeeGraph img {
