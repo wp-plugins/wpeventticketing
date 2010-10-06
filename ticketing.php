@@ -4,7 +4,7 @@ Plugin Name: Event Ticketing System
 Plugin URI: http://9seeds.com/
 Description: Sell tickets for an event
 Author: 9seeds
-Version: .4
+Version: .5
 Author URI: http://9seeds.com/
 */
 
@@ -39,6 +39,15 @@ class eventTicketingSystem
 
 	function adminscripts()
 	{
+		//look for export button being clicked, export attendee list as csv
+		if(wp_verify_nonce($_POST['exportAttendeeNonce'], plugin_basename(__FILE__)) && strlen($_REQUEST["attendeeCsv"]))
+		{
+			header("Content-type: text/csv");
+			header("Content-Disposition: attachment;filename=attendee_export.csv");
+			echo base64_decode($_REQUEST["attendeeCsv"]);
+			exit;
+		}
+
 		$pluginurl = WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__));
 		wp_enqueue_script('eventticketingscript', $pluginurl . '/js/ticketing.js', array('jquery'));
 		wp_enqueue_script('datepicker', $pluginurl . '/js/jquery.ui.datepicker.js', array('eventticketingscript', 'jquery-ui-core'));
@@ -263,6 +272,9 @@ class eventTicketingSystem
 			
 			echo '<div id="ticket_sales_bottom">';
 			echo '<div id="icon-users" class="icon32"></div><h2>Attendees</h2>';
+			
+			
+			
 			foreach ($th as $k => $v)
 			{
 				echo "<table class='widefat'>";
@@ -278,6 +290,7 @@ class eventTicketingSystem
 				echo "</thead>";
 				echo '<tbody>';
 				$c = 0;
+				$csv = implode(',',$headerkey)."\n";
 				foreach ($tr as $data)
 				{
 					//print_r($data);exit;
@@ -292,15 +305,26 @@ class eventTicketingSystem
 					{
 						echo '<tr>';
 						echo '<td>' . $c . '</td>';
+						$tcsv = '';
 						foreach ($headerkey as $key)
 						{
 							echo '<td>' . (strlen($data[$key]) ? $data[$key] : "&nbsp;") . '</td>';
+							$tcsv .= '"'.$data[$key].'",';
 						}
+						$csv .= substr($tcsv,0,-1)."\n";
 					}
 					echo '</tr>';
 				}
+				echo '<tr><td colspan="'.count($headerkey).'">';
+				echo '<form action="" method="post">
+            	<input type="hidden" name="exportAttendeeNonce" id="exportAttendeeNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+				<input type="hidden" name="attendeeCsv" value="'.base64_encode($csv).'">
+				<input type="submit" class="button-primary" name="submit" value="Export Attendee List">
+				</form>';
+				echo '</td></tr>';
 				echo '</tbody>';
 				echo '</table>';
+				
 			}
 		}
 		echo '</div></div>';
