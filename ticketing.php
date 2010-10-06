@@ -240,6 +240,7 @@ class eventTicketingSystem
 				{
 					$summary[$to[$s]]++;
 				}
+				ksort($summary);
 				foreach($summary as $o => $count)
 				{
 					echo '<tr><td>'.$o.'</td><td>'.$count.'</td></tr>';
