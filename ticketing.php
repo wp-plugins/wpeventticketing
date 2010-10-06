@@ -1281,7 +1281,7 @@ class eventTicketingSystem
 			}
 			if (strlen($_REQUEST["couponSubmitButton"]))
 			{
-				if (is_array($o["coupons"][$_REQUEST["couponCode"]]) && $o["coupons"][$_REQUEST["couponCode"]]["used"] == false && is_numeric($o["coupons"][$_REQUEST["couponCode"]]["packageId"]))
+				if (is_array($o["coupons"][$_REQUEST["couponCode"]]) && is_numeric($o["coupons"][$_REQUEST["couponCode"]]["packageId"]))
 				{
 					$coupon = $o["coupons"][$_REQUEST["couponCode"]];
 					if($coupon["uses"] <= 0)
