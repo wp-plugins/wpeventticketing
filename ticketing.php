@@ -250,7 +250,7 @@ class eventTicketingSystem
 				ksort($summary);
 				foreach($summary as $o => $count)
 				{
-					echo '<tr><td>'.$o.'</td><td>'.$count.'</td></tr>';
+					echo '<tr><td>'.(strlen($o) ? $o : "No reponse").'</td><td>'.$count.'</td></tr>';
 				}
 				echo '</tbody>';
 				echo '</table>';
@@ -296,13 +296,13 @@ class eventTicketingSystem
 					if(!$data["final"])
 					{
 						echo '<tr style="background-color:LightPink;">';
-						echo '<td><a href="http://2010.nyc.wordcamp.org/tickets/?tickethash='.$data["hash"].'">' . $c . '</a></td>';
+						echo '<td><a href="http://2010.nyc.wordcamp.org/tickets/?tickethash='.$data["hash"].'" target="_blank">' . $c . '</a></td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
 					}
 					else
 					{
 						echo '<tr>';
-						echo '<td>' . $c . '</td>';
+						echo '<td><a href="http://2010.nyc.wordcamp.org/tickets/?tickethash='.$data["hash"].'" target="_blank">' . $c . '</a></td>';
 						$tcsv = '';
 						foreach ($headerkey as $key)
 						{
