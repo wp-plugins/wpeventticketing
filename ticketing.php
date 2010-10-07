@@ -21,11 +21,9 @@ class eventTicketingSystem
 	function activate()
 	{
 		//Set up default options
-
-		$data = unserialize(file_get_contents(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/defaults.ser', serialize($out)));
-
 		if (!get_option("eventTicketingSystem"))
 		{
+			$data = unserialize(file_get_contents(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/defaults.ser', serialize($out)));
 			add_option("eventTicketingSystem", $data);
 		}
 	}
@@ -1227,37 +1225,36 @@ class eventTicketingSystem
 
 					echo '<div>Your ticket has been saved</div>';
 				}
-				//save ticket info
-				//mark as final?
-				//say see you soon
-			}
-
-			//pull ticketinfo
-			//display ticket form (filling in if this is already been finished)
-			$ticketHash = $_REQUEST["tickethash"];
-			$packageHash = get_option('ticket_' . $ticketHash);
-			$package = get_option('package_' . $packageHash);
-			if ($package instanceof package)
-			{
-				$ticket = $package->tickets[$ticketHash];
-
-				//echo '<pre>'.print_r($ticket,true).'</pre>';
-				echo '<form name="ticketInformation" method="post" action="">';
-				echo '<table>';
-				echo '<input type="hidden" name="ticketInformationNonce" id="ticketInformationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
-				echo '<input type="hidden" name ="tickethash" value="' . $ticketHash . '" />';
-				echo '<input type="hidden" name ="packagehash" value="' . $packageHash . '" />';
-				foreach ($ticket->ticketOptions as $option)
-				{
-					echo '<tr><td>' . $option->displayName . ':</td><td>' . $option->displayForm() . '</tr>';
-				}
-				echo '<tr><td colspan="2"><input type="submit" name="submitbutt" value="Save Ticket Information"></td></tr>';
-				echo '</table>';
-				echo '</form>';
 			}
 			else
 			{
-				echo  '<div class="ticketingerror">Your tickethash appears to be incorrect. Please check your link and try again</div>';
+				//pull ticketinfo
+				//display ticket form (filling in if this is already been finished)
+				$ticketHash = $_REQUEST["tickethash"];
+				$packageHash = get_option('ticket_' . $ticketHash);
+				$package = get_option('package_' . $packageHash);
+				if ($package instanceof package)
+				{
+					$ticket = $package->tickets[$ticketHash];
+
+					//echo '<pre>'.print_r($ticket,true).'</pre>';
+					echo '<form name="ticketInformation" method="post" action="">';
+					echo '<table>';
+					echo '<input type="hidden" name="ticketInformationNonce" id="ticketInformationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+					echo '<input type="hidden" name ="tickethash" value="' . $ticketHash . '" />';
+					echo '<input type="hidden" name ="packagehash" value="' . $packageHash . '" />';
+					foreach ($ticket->ticketOptions as $option)
+					{
+						echo '<tr><td>' . $option->displayName . ':</td><td>' . $option->displayForm() . '</tr>';
+					}
+					echo '<tr><td colspan="2"><input type="submit" name="submitbutt" value="Save Ticket Information"></td></tr>';
+					echo '</table>';
+					echo '</form>';
+				}
+				else
+				{
+					echo  '<div class="ticketingerror">Your tickethash appears to be incorrect. Please check your link and try again</div>';
+				}
 			}
 		}
 		else
