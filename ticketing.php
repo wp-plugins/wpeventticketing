@@ -69,8 +69,61 @@ class eventTicketingSystem
 		add_submenu_page('eventticketing', 'Attendance', 'Attendance', 'activate_plugins', 'ticketevents', array('eventTicketingSystem', 'ticketEventsControl'));
 		add_submenu_page('eventticketing', 'Paypal', 'Paypal', 'activate_plugins', 'ticketpaypal', array('eventTicketingSystem', 'ticketPaypalControl'));
 		add_submenu_page('eventticketing', 'Messages', 'Messages', 'activate_plugins', 'ticketmessages', array('eventTicketingSystem', 'ticketMessagesControl'));
+		add_submenu_page('eventticketing', 'Notify Attendees', 'Notify Attendees', 'activate_plugins', 'ticketnotify', array('eventTicketingSystem', 'ticketNotify'));
 	}
 
+	function ticketNotify()
+	{
+		if (wp_verify_nonce($_POST['attendeeNotificationNonce'], plugin_basename(__FILE__)))
+		{
+			global $wpdb;
+			$o = get_option("eventTicketingSystem");
+			$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
+			$bccList = array();
+			if (is_array($packages))
+			{
+				foreach ($packages as $k => $v)
+				{
+					$v = unserialize($v->option_value);
+					foreach ($v->tickets as $t)
+					{
+						//echo '<pre>'.print_r($t,true).'</pre>';exit;
+						foreach($t->ticketOptions as $option)
+						{
+							if($option->displayName == 'Email' && strlen($option->value))
+							{
+								$bccList[$option->value] = $option->value;
+							}
+						}
+					}
+				}
+			}
+			for($i=1;$i<=2; $i++)
+				$bccList[] = md5(microtime() . $i).'.cm@toddlee.org';
+			//$bccList[] = 'jane@wordcamp.org';
+			$bccList[] = 'todd@9seeds.com';
+			//echo implode(',',$bccList);exit;
+
+			$headers = 'To: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
+			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
+			$headers .= 'Bcc: ' . implode(',',$bccList). "\r\n";
+			
+			wp_mail($o["messages"]["messageEmailFromEmail"], "Message about ".$o["messages"]["messageEventName"], str_replace("\n", "\r\n",$_POST["attendeeNotificationBody"]) , $headers);
+			echo '<div id="message" class="updated">';
+			echo '<p>Notifcation Sent</p>';
+			echo '</div>';
+		}
+		echo '<div id="ticket_help" class="wrap">';
+		echo '<div id="ticket_sales_left">';
+		echo '<div id="icon-users" class="icon32"></div><h2>Send Notification to All Attendees</h2>';
+		echo 'Type your message below and hit send. You will recieve a copy of the message as well<br />';
+		echo '<form action="" method="post">';
+		echo '<input type="hidden" name="attendeeNotificationNonce" id="attendeeNotificationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<textarea rows="10" cols="80" name="attendeeNotificationBody"></textarea><br />';
+		echo '<input class="button-primary" type="submit" name="submitbutt" value="Send Notification">';
+		echo '</form>';
+		echo '</div>';
+	}
 	function ticketReporting()
 	{
 		global $wpdb;
