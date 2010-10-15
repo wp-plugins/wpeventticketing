@@ -98,12 +98,7 @@ class eventTicketingSystem
 					}
 				}
 			}
-			for($i=1;$i<=2; $i++)
-				$bccList[] = md5(microtime() . $i).'.cm@toddlee.org';
-			//$bccList[] = 'jane@wordcamp.org';
-			$bccList[] = 'todd@9seeds.com';
-			//echo implode(',',$bccList);exit;
-
+			
 			$headers = 'To: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . implode(',',$bccList). "\r\n";
