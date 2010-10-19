@@ -85,9 +85,12 @@ class eventTicketingSystem
 				foreach ($packages as $k => $v)
 				{
 					$v = unserialize($v->option_value);
+					
+					if(strlen($v->orderDetails["email"]))
+						$bccList[$v->orderDetails["email"]] = $v->orderDetails["email"];
+					
 					foreach ($v->tickets as $t)
 					{
-						//echo '<pre>'.print_r($t,true).'</pre>';exit;
 						foreach($t->ticketOptions as $option)
 						{
 							if($option->displayName == 'Email' && strlen($option->value))
@@ -98,12 +101,15 @@ class eventTicketingSystem
 					}
 				}
 			}
-			
+	        
+			echo implode(',',$bccList);
+			/*	
 			$headers = 'To: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . implode(',',$bccList). "\r\n";
 			
 			wp_mail($o["messages"]["messageEmailFromEmail"], "Message about ".$o["messages"]["messageEventName"], str_replace("\n", "\r\n",$_POST["attendeeNotificationBody"]) , $headers);
+			 */
 			echo '<div id="message" class="updated">';
 			echo '<p>Notifcation Sent</p>';
 			echo '</div>';
@@ -1374,7 +1380,7 @@ class eventTicketingSystem
 				}
 			}
 			echo '<tr><td>Coupon Code: <input class="input" name="couponCode"></td><td><input type="submit" name="couponSubmitButton" value="Apply Coupon"></td><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "2" : "1") . '">&nbsp;</td></tr>';
-			echo '<tr><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "4" : "3") . '"><input type="image" src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"><div id="purchaseinfo" >Chose your tickets and pay for them at PayPal. You will fill in your ticket information after your purchase is completed</div></td></tr>';
+			echo '<tr><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "4" : "3") . '"><input type="image" src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"><div id="purchaseinfo" >Choose your tickets and pay for them at PayPal. You will fill in your ticket information after your purchase is completed</div></td></tr>';
 			echo '</table>';
 			echo '</div>';
 			echo '</form>';
@@ -1462,7 +1468,7 @@ class eventTicketingSystem
 			//was something purchased?
 			if ($somethingpurchased == 0)
 			{
-				$_SESSION["ticketingError"] = 'You did not chose a quantity on any of the tickets. Please chose how many tickets you want';
+				$_SESSION["ticketingError"] = 'You did not choose a quantity on any of the tickets. Please choose how many tickets you want';
 			}
 			else
 			{
@@ -1536,7 +1542,7 @@ class eventTicketingSystem
 				}
 				else
 				{
-					$_SESSION["ticketingError"] = 'No items were found. Please go back and chose how many tickets you want';
+					$_SESSION["ticketingError"] = 'No items were found. Please go back and choose how many tickets you want';
 				}
 			}
 		}
