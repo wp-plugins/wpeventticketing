@@ -103,13 +103,16 @@ class eventTicketingSystem
 			}
 	        
 			echo implode(',',$bccList);
-			/*	
+
 			$headers = 'To: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . implode(',',$bccList). "\r\n";
-			
-			wp_mail($o["messages"]["messageEmailFromEmail"], "Message about ".$o["messages"]["messageEventName"], str_replace("\n", "\r\n",$_POST["attendeeNotificationBody"]) , $headers);
-			 */
+
+			//WP -always- quotes so we have to -always- stripslashes
+			$note = stripslashes($_POST["attendeeNotificationBody"]);
+
+			wp_mail($o["messages"]["messageEmailFromEmail"], "Message about ".$o["messages"]["messageEventName"], $note , $headers);
+			 
 			echo '<div id="message" class="updated">';
 			echo '<p>Notifcation Sent</p>';
 			echo '</div>';
@@ -1830,7 +1833,7 @@ class package
 
 	public function validDates()
 	{
-		if (time() > strtotime($this->expireStart) && time() < strtotime($this->expireEnd))
+		if (current_time('timestamp') > strtotime($this->expireStart) && current_time('timestamp') < strtotime($this->expireEnd." +1 day"))
 		{
 			return true;
 		}
