@@ -348,13 +348,15 @@ class eventTicketingSystem
 				$csv = implode(',',$headerkey)."\n";
 				foreach ($tr as $data)
 				{
-					//print_r($data);exit;
 					$c++;
 					if(!$data["final"])
 					{
 						echo '<tr style="background-color:LightPink;">';
 						echo '<td><a href="http://2010.nyc.wordcamp.org/tickets/?tickethash='.$data["hash"].'" target="_blank">' . $c . '</a></td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
+						//echo '<pre>'.print_r($data,true).'</pre>';exit;
+						$tcsv = array($data["Sold Time"],$data["orderdetails"]["name"],$data["orderdetails"]["email"]);
+						$csv .= implode(',',$tcsv)."\n";
 					}
 					else
 					{
