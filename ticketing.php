@@ -70,6 +70,22 @@ class eventTicketingSystem
 		add_submenu_page('eventticketing', 'Paypal', 'Paypal', 'activate_plugins', 'ticketpaypal', array('eventTicketingSystem', 'ticketPaypalControl'));
 		add_submenu_page('eventticketing', 'Messages', 'Messages', 'activate_plugins', 'ticketmessages', array('eventTicketingSystem', 'ticketMessagesControl'));
 		add_submenu_page('eventticketing', 'Notify Attendees', 'Notify Attendees', 'activate_plugins', 'ticketnotify', array('eventTicketingSystem', 'ticketNotify'));
+		add_submenu_page('eventticketing', 'Create/Edit Attendees', 'Create/Edit Attendees', 'activate_plugins', 'ticketattendeeedit', array('eventTicketingSystem', 'ticketAttendeeEdit'));
+	}
+
+	function ticketAttendeeEdit()
+	{
+		echo '<div id="ticket_editattendee" class="wrap">';
+		if (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32)
+		{
+			echo '<div id="icon-users" class="icon32"></div><h2>Edit Attendee</h2>';
+			eventTicketingSystem::ticketEditScreen();
+			echo '</div>';
+		}
+	
+		eventTicketingSystem::generateAttendeeTable(urldecode($_REQUEST["attendeesort"]));
+		
+		echo '</div>';
 	}
 
 	function ticketNotify()
@@ -128,6 +144,114 @@ class eventTicketingSystem
 		echo '</form>';
 		echo '</div>';
 	}
+	
+	function getAttendees()
+	{
+        global $wpdb;
+        $packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
+        if (is_array($packages))
+        {
+            foreach ($packages as $k => $v)
+            {
+                $v = unserialize($v->option_value);
+                foreach ($v->tickets as $t)
+                {
+                    $t->orderDetails = $v->orderDetails;
+                    $attendee[$t->displayName()][] = $t;
+                }
+            }
+        	return $attendee;
+		}
+		return array();
+	}
+
+	function generateAttendeeTable($sort = 'Sold Time')
+	{
+		$attendee = eventTicketingSystem::getAttendees();
+		if (is_array($attendee))
+		{
+			foreach ($attendee as $ticketType => $v)
+			{
+				foreach ($v as $ticket)
+				{
+					$trtmp = array();
+					//populate the soldtime stuff in the display array
+					$th[$ticketType]['Sold Time'] = 'Sold Time';
+					$trtmp['Sold Time'] = date("m/d/Y H:i:s",$ticket->soldTime);
+
+					foreach ($ticket->ticketOptions as $o)
+					{
+						$th[$ticketType][$o->displayName] = $o->displayName;
+						$trtmp[$o->displayName] = $o->value;
+					}
+					$trtmp["final"] = $ticket->final;
+					$trtmp["orderdetails"] = $ticket->orderDetails;
+					$trtmp["hash"] = $ticket->ticketId;
+					$tr[] = $trtmp;
+				}
+			}
+	
+			$cmp = new arbitrarySort($sort);
+			usort($tr, array($cmp, 'cmp'));
+			
+
+			foreach ($th as $k => $v)
+			{
+				echo "<table class='widefat'>";
+				echo "<thead>";
+				echo "<tr>";
+				echo '<th>&nbsp;</th>';
+				foreach ($v as $header)
+				{
+					$headerkey[] = $header;
+					echo '<th><a href="'.admin_url("admin.php?page=ticketattendeeedit&attendeesort=".urlencode($header)).'">'.$header.'</a></th>';
+				}
+				echo "</tr>";
+				echo "</thead>";
+				echo '<tbody>';
+				$c = 0;
+				$csv = implode(',',$headerkey)."\n";
+				foreach ($tr as $data)
+				{
+					$c++;
+					if(!$data["final"])
+					{
+						echo '<tr style="background-color:LightPink;">';
+						echo '<td><a href="'.admin_url("admin.php?page=ticketattendeeedit&tickethash=".$data['hash']).'">' . $c . '</a></td>';
+						echo '<td>'.$data["Sold Time"].'</td>';
+						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
+						//echo '<pre>'.print_r($data,true).'</pre>';exit;
+						$tcsv = array($data["Sold Time"],$data["orderdetails"]["name"],$data["orderdetails"]["email"]);
+						$csv .= implode(',',$tcsv)."\n";
+					}
+					else
+					{
+						echo '<tr>';
+						echo '<td><a href="'.admin_url("admin.php?page=ticketattendeeedit&tickethash=".$data['hash']).'">'.$c.'</a></td>';
+						$tcsv = '';
+						foreach ($headerkey as $key)
+						{
+							echo '<td>' . (strlen($data[$key]) ? $data[$key] : "&nbsp;") . '</td>';
+							$tcsv .= '"'.$data[$key].'",';
+						}
+						$csv .= substr($tcsv,0,-1)."\n";
+					}
+					echo '</tr>';
+				}
+				echo '<tr><td colspan="'.count($headerkey).'">';
+				echo '<form action="" method="post">
+            	<input type="hidden" name="exportAttendeeNonce" id="exportAttendeeNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+				<input type="hidden" name="attendeeCsv" value="'.base64_encode($csv).'">
+				<input type="submit" class="button-primary" name="submit" value="Export Attendee List">
+				</form>';
+				echo '</td></tr>';
+				echo '</tbody>';
+				echo '</table>';
+				
+			}
+		}
+	}
+
 	function ticketReporting()
 	{
 		global $wpdb;
@@ -352,7 +476,7 @@ class eventTicketingSystem
 					if(!$data["final"])
 					{
 						echo '<tr style="background-color:LightPink;">';
-						echo '<td><a href="http://2010.nyc.wordcamp.org/tickets/?tickethash='.$data["hash"].'" target="_blank">' . $c . '</a></td>';
+						echo '<td><a href="'.admin_url("admin.php?page=ticketattendeeedit&tickethash=".$data['hash']).'">' . $c . '</a></td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
 						//echo '<pre>'.print_r($data,true).'</pre>';exit;
 						$tcsv = array($data["Sold Time"],$data["orderdetails"]["name"],$data["orderdetails"]["email"]);
@@ -1264,57 +1388,7 @@ class eventTicketingSystem
 		}
 		elseif (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32)
 		{
-			//ticket form recieved
-			if (wp_verify_nonce($_POST['ticketInformationNonce'], plugin_basename(__FILE__)))
-			{
-				$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
-				//echo '<pre>'.print_r($_REQUEST,true).'</pre>';
-				$ticketHash = $_REQUEST["tickethash"];
-				$packageHash = $_REQUEST["packagehash"];
-				$package = get_option('package_' . $packageHash);
-				if ($package instanceof package)
-				{
-					foreach ($_REQUEST["ticketOption"] as $oid => $oval)
-					{
-						$package->tickets[$ticketHash]->ticketOptions[$oid]->value = $oval;
-					}
-					//echo '<pre>'.print_r($package->tickets,true).'</pre>';
-					$package->tickets[$ticketHash]->final = true;
-					update_option('package_' . $packageHash, $package);
-
-					echo '<div>Your ticket has been saved</div>';
-				}
-			}
-			else
-			{
-				//pull ticketinfo
-				//display ticket form (filling in if this is already been finished)
-				$ticketHash = $_REQUEST["tickethash"];
-				$packageHash = get_option('ticket_' . $ticketHash);
-				$package = get_option('package_' . $packageHash);
-				if ($package instanceof package)
-				{
-					$ticket = $package->tickets[$ticketHash];
-
-					//echo '<pre>'.print_r($ticket,true).'</pre>';
-					echo '<form name="ticketInformation" method="post" action="">';
-					echo '<table>';
-					echo '<input type="hidden" name="ticketInformationNonce" id="ticketInformationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
-					echo '<input type="hidden" name ="tickethash" value="' . $ticketHash . '" />';
-					echo '<input type="hidden" name ="packagehash" value="' . $packageHash . '" />';
-					foreach ($ticket->ticketOptions as $option)
-					{
-						echo '<tr><td>' . $option->displayName . ':</td><td>' . $option->displayForm() . '</tr>';
-					}
-					echo '<tr><td colspan="2"><input type="submit" name="submitbutt" value="Save Ticket Information"></td></tr>';
-					echo '</table>';
-					echo '</form>';
-				}
-				else
-				{
-					echo  '<div class="ticketingerror">Your tickethash appears to be incorrect. Please check your link and try again</div>';
-				}
-			}
+			eventTicketingSystem::ticketEditScreen();
 		}
 		else
 		{
@@ -1393,6 +1467,61 @@ class eventTicketingSystem
 		return (ob_get_clean());
 	}
 
+	function ticketEditScreen()
+	{
+		//ticket form recieved
+		if (wp_verify_nonce($_POST['ticketInformationNonce'], plugin_basename(__FILE__)))
+		{
+			$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
+			//echo '<pre>'.print_r($_REQUEST,true).'</pre>';
+			$ticketHash = $_REQUEST["tickethash"];
+			$packageHash = $_REQUEST["packagehash"];
+			$package = get_option('package_' . $packageHash);
+			if ($package instanceof package)
+			{
+				foreach ($_REQUEST["ticketOption"] as $oid => $oval)
+				{
+					$package->tickets[$ticketHash]->ticketOptions[$oid]->value = $oval;
+				}
+				//echo '<pre>'.print_r($package->tickets,true).'</pre>';
+				$package->tickets[$ticketHash]->final = true;
+				update_option('package_' . $packageHash, $package);
+
+				echo '<div>Your ticket has been saved</div>';
+			}
+		}
+		else
+		{
+			//pull ticketinfo
+			//display ticket form (filling in if this is already been finished)
+			$ticketHash = $_REQUEST["tickethash"];
+			$packageHash = get_option('ticket_' . $ticketHash);
+			$package = get_option('package_' . $packageHash);
+			if ($package instanceof package)
+			{
+				$ticket = $package->tickets[$ticketHash];
+
+				//echo '<pre>'.print_r($ticket,true).'</pre>';
+				echo '<form name="ticketInformation" method="post" action="">';
+				echo '<table>';
+				echo '<input type="hidden" name="ticketInformationNonce" id="ticketInformationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+				echo '<input type="hidden" name ="tickethash" value="' . $ticketHash . '" />';
+				echo '<input type="hidden" name ="packagehash" value="' . $packageHash . '" />';
+				foreach ($ticket->ticketOptions as $option)
+				{
+					echo '<tr><td>' . $option->displayName . ':</td><td>' . $option->displayForm() . '</tr>';
+				}
+				echo '<tr><td colspan="2"><input type="submit" name="submitbutt" value="Save Ticket Information"></td></tr>';
+				echo '</table>';
+				echo '</form>';
+			}
+			else
+			{
+				echo  '<div class="ticketingerror">Your tickethash appears to be incorrect. Please check your link and try again</div>';
+			}
+		}
+	}
+	
 	function paypal()
 	{
 		$o = get_option("eventTicketingSystem");
@@ -1559,6 +1688,32 @@ class eventTicketingSystem
 			return 0;
 		}
 		return ($a->soldTime < $b->soldTime) ? -1 : 1;
+	}
+}
+
+class arbitrarySort
+{
+	public $sort;
+
+	public function __construct($sort)
+	{
+		$this->sort = $sort;
+	}
+
+	public function cmp($a, $b)
+    {
+        if (is_numeric($a[$this->sort]) && is_numeric($b[$this->sort]))
+        {
+			if ($a[$this->sort] == $b[$this->sort])
+			{
+				return 0;
+			}
+			return ($a[$this->sort] < $b[$this->sort]) ? -1 : 1;
+    	}
+		else
+		{
+			return strcasecmp($a[$this->sort], $b[$this->sort]);
+		}
 	}
 }
 
