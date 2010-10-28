@@ -60,7 +60,7 @@ class eventTicketingSystem
 
 	function options()
 	{
-		add_menu_page('Ticketing', 'Ticketing', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png',30);
+		add_menu_page('Tickets', 'Tickets', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png',30);
 		add_submenu_page('eventticketing', 'Reporting', 'Reporting', 'activate_plugins', 'eventticketing', array('eventTicketingSystem', 'ticketReporting'));
 		add_submenu_page('eventticketing', 'Ticket Options', 'Ticket Options', 'activate_plugins', 'ticketoptions', array('eventTicketingSystem', 'ticketOptionsControl'));
 		add_submenu_page('eventticketing', 'Tickets', 'Tickets', 'activate_plugins', 'tickettickets', array('eventTicketingSystem', 'ticketTicketsControl'));
@@ -71,23 +71,150 @@ class eventTicketingSystem
 		add_submenu_page('eventticketing', 'Messages', 'Messages', 'activate_plugins', 'ticketmessages', array('eventTicketingSystem', 'ticketMessagesControl'));
 		add_submenu_page('eventticketing', 'Notify Attendees', 'Notify Attendees', 'activate_plugins', 'ticketnotify', array('eventTicketingSystem', 'ticketNotify'));
 		add_submenu_page('eventticketing', 'Create/Edit Attendees', 'Create/Edit Attendees', 'activate_plugins', 'ticketattendeeedit', array('eventTicketingSystem', 'ticketAttendeeEdit'));
+		add_submenu_page('eventticketing', 'Instructions', 'Instructions', 'activate_plugins', 'ticketinstructions', array('eventTicketingSystem', 'ticketInstructions'));
+		add_submenu_page('eventticketing', 'Reset Event', 'Reset Event', 'activate_plugins', 'ticketreset', array('eventTicketingSystem', 'ticketReset'));
+	}
+
+	function ticketInstructions()
+	{
+		echo '<div class="instructional">Create all the options you want for each ticket. This is the information you would ask of each person attending your event such as personal info (name/address/phone) or shirt size or meal preference</div>
+			
+			<div class="instructional">Create a ticket and attach the options you want for that ticket. <strong>Add the options in the order you want them displayed on the form when someone purchases a ticket</strong><p style="font-style: italic;"><strong>Example:</strong> Create two types of tickets which are the same where one doesn\'t ask for shirt size since a shirt isn\'t included</div>
+			
+			<div class="instructional">Create a package and attach a ticket to it. This is where you determine the price for the event.<p style="font-style: italic;"><strong>Example:</strong> You have defined a single standard ticket called Regular. Attach Regular to the package with a quantity of 1, give it a price which is $10 less than full admission and give it an active date which will end a month before the event and a quantity of 50. With this you have created an early bird ticket which will expire either a month before the event occurs or when 50 of them are sold, whichever comes first<p style="font-style: italic;"><strong>Example:</strong> Create a package and attach Regular to the package with a quantity of 4 and give this package a price of $500. This would be like a sponsorship package where you are bundling some free tickets to go along with a sponsorship</div>
+			
+			<div class="instructional">Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantites if they are set. At no point will you sell more than this many tickets to the event.</div>
+			
+			<div class="instructional">Set your paypal info. None of this is going to work if you cannot get paid. Follow <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">these instructions at Paypal</a> to get your API signature</div>
+			
+			<div class="instructional">Coupons are codes you will create and attach to a package for a one time use to give to someone to turn in for a freebie. Owe someone a favor or have them pay you by check? Just generate a coupon and welcome them to the event!</div>
+			
+			<div class="instructional">This section controls the messages that your customers will see in email and on the screen as they purchase tickets to the event</div>';
+	}
+
+	function ticketReset()
+	{
+		echo "OH GOD WHAT ARE YOU DOING HERE DON'T CLICK ANYTHING!";
 	}
 
 	function ticketAttendeeEdit()
 	{
+		$o = get_option("eventTicketingSystem");
+		
 		echo '<div id="ticket_editattendee" class="wrap">';
-		if (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32)
+		
+		//manualy create a ticket
+		if (wp_verify_nonce($_POST['manualCreatePackageNonce'], plugin_basename(__FILE__)) && is_numeric($_REQUEST["manualCreatePackageId"]) && isset($o["packageProtos"][$_REQUEST["manualCreatePackageId"]]))
 		{
-			echo '<div id="icon-users" class="icon32"></div><h2>Edit Attendee</h2>';
+			$hashes = eventTicketingSystem::ticketSellPackage($_REQUEST["manualCreatePackageId"]);
+			$_REQUEST["tickethash"] = $hashes["ticketHash"][0];
 			eventTicketingSystem::ticketEditScreen();
+		}	
+
+		//save edited ticket info
+		if (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32 && wp_verify_nonce($_POST['ticketInformationNonce'], plugin_basename(__FILE__)))
+		{
+			eventTicketingSystem::ticketEditScreen();
+		}
+
+		//edit or delete an existing ticket
+		if (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32 && wp_verify_nonce($_POST['attendeeEditNonce'], plugin_basename(__FILE__)))
+		{
+			if(isset($_REQUEST["edit"]) && is_numeric($_REQUEST["edit"]) && $_REQUEST["edit"] == 1)
+			{
+				echo '<div id="icon-users" class="icon32"></div><h2>Attendee</h2>';
+				eventTicketingSystem::ticketEditScreen();
+			}	
+			elseif(isset($_REQUEST["del"]) && is_numeric($_REQUEST["del"]) && $_REQUEST["del"] == 1)
+			{
+				//echo '<pre>'.print_r($package,true).'</pre>';
+				
+				$ticketHash = $_REQUEST["tickethash"];
+				$packageHash = get_option('ticket_'.$ticketHash);
+				$package = get_option('package_'.$packageHash);
+				unset($package->tickets[$ticketHash]);
+				
+				//remove ticket
+				delete_option("ticket_".$ticketHash);
+				$o["packageQuantities"]["totalTicketsSold"]--;
+				
+				//if this was the last ticket in the package, get rid of the whole package too
+				if(count($package->tickets) == 0)
+				{
+					delete_option("package_".$packageHash);
+					$o["packageQuantities"][$package->orderDetails["items"][0]["packageId"]]--;
+				}
+			
+				update_option("eventTicketingSystem", $o);
+			}
+		}
+		
+		
+		if(is_array($o["packageProtos"]))
+		{
+			echo '<div id="icon-users" class="icon32"></div><h2>Create Manual Ticket</h2>';
+			echo '<form method="post" action="">';
+			echo '<input type="hidden" name="manualCreatePackageNonce" id="manualCreatePackageNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+			echo 'Package Type: <select name="manualCreatePackageId" id="manualCreatePackageId">';
+			foreach($o["packageProtos"] as $p)
+			{
+				echo '<option value="'.$p->packageId.'">'.$p->displayName().'</option>';
+			}
+			echo '</select><br />';
+			echo '<input type="submit" class="button-primary" name="submitbutt" val="Create Ticket">';
+			echo '</form>';
 			echo '</div>';
 		}
-	
+		
+		//echo '<br /><br />';	
+		
+		echo '<div id="icon-users" class="icon32"></div><h2>Attendee List</h2>';
 		eventTicketingSystem::generateAttendeeTable(urldecode($_REQUEST["attendeesort"]));
 		
 		echo '</div>';
 	}
 
+	function ticketSellPackage($packageId)
+	{
+		$o = get_option("eventTicketingSystem");
+		$item[] = array("quantity" => 1,
+						"name" => $o["packageProtos"][$packageId]->displayName(),
+						"desc" => $o["packageProtos"][$packageId]->packageDescription,
+						"price" => $o["packageProtos"][$packageId]->price,
+						"packageid" => $packageId
+		);
+		
+		$order = array("items" => $item, "email" => '', "name" => "Admin Generated");
+		$packageHash = md5(microtime() . $packageId);
+		$package = clone $o["packageProtos"][$packageId];
+		$package->setPackageId($packageHash);
+		$package->setOrderDetails($order);
+		
+		//get ticket proto from package and wipe proto from package
+		$t = array_shift($package->tickets);
+
+		for ($y = 1; $y <= $package->ticketQuantity; $y++)
+		{
+			//create tickets and attach them to real package
+			$ticketHash = md5(microtime() . $t->ticketId);
+			$ticket = clone $o["ticketProtos"][$t->ticketId];
+			$ticket->setTicketid($ticketHash);
+			$ticket->setSoldTime(time());
+			$package->addTicket($ticket);
+			add_option("ticket_" . $ticketHash, $packageHash);
+			$o["packageQuantities"]["totalTicketsSold"]++;
+			$tickethashes[] = $ticketHash;
+		}
+		$o["packageQuantities"][$packageId]++;
+		add_option("package_" . $packageHash, $package);
+	
+		//store packagequenitites and tickets sold
+		//should probably be in a different option
+		update_option("eventTicketingSystem", $o);
+
+		return(array("packageHash"=>$packageHash,"ticketHash"=>$tickethashes));
+	}
+	
 	function ticketNotify()
 	{
 		if (wp_verify_nonce($_POST['attendeeNotificationNonce'], plugin_basename(__FILE__)))
@@ -167,6 +294,11 @@ class eventTicketingSystem
 
 	function generateAttendeeTable($sort = 'Sold Time')
 	{
+		if(!strlen($sort))
+		{
+			$sort = 'Sold Time';
+		}
+		
 		$attendee = eventTicketingSystem::getAttendees();
 		if (is_array($attendee))
 		{
@@ -197,6 +329,12 @@ class eventTicketingSystem
 
 			foreach ($th as $k => $v)
 			{
+				echo '<form method="post" action="'.admin_url("admin.php?page=ticketattendeeedit").'" name="attendeeEdit">
+				<input type="hidden" name="attendeeEditNonce" id="attendeeEditNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+				<input type="hidden" name="del" value="" />
+				<input type="hidden" name="edit" value="" />
+				<input type="hidden" name="tickethash" value="" />
+				</form>';
 				echo "<table class='widefat'>";
 				echo "<thead>";
 				echo "<tr>";
@@ -217,7 +355,7 @@ class eventTicketingSystem
 					if(!$data["final"])
 					{
 						echo '<tr style="background-color:LightPink;">';
-						echo '<td><a href="'.admin_url("admin.php?page=ticketattendeeedit&tickethash=".$data['hash']).'">' . $c . '</a></td>';
+						echo '<td><a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
 						echo '<td>'.$data["Sold Time"].'</td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
 						//echo '<pre>'.print_r($data,true).'</pre>';exit;
@@ -227,7 +365,8 @@ class eventTicketingSystem
 					else
 					{
 						echo '<tr>';
-						echo '<td><a href="'.admin_url("admin.php?page=ticketattendeeedit&tickethash=".$data['hash']).'">'.$c.'</a></td>';
+						echo '<td><a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
+						echo '</td>';
 						$tcsv = '';
 						foreach ($headerkey as $key)
 						{
@@ -1511,7 +1650,7 @@ class eventTicketingSystem
 				{
 					echo '<tr><td>' . $option->displayName . ':</td><td>' . $option->displayForm() . '</tr>';
 				}
-				echo '<tr><td colspan="2"><input type="submit" name="submitbutt" value="Save Ticket Information"></td></tr>';
+				echo '<tr><td colspan="2"><input type="submit" class="button-primary" name="submitbutt" value="Save Ticket Information"></td></tr>';
 				echo '</table>';
 				echo '</form>';
 			}
@@ -1909,7 +2048,7 @@ class package
 	public function displayForm()
 	{
 		echo '<div id="eventPackage" class="wrap">';
-		echo '<h2>New Package</h2>';
+		echo '<h2>'.$this->displayName().'</h2>';
 		echo '<div class="packageName">Package Display Name<input type="text" name="packageDisplayName" value="' . $this->packageName . '"></div>';
 		echo '<div class="packageDescription">Package Description<textarea name="packageDescription">' . $this->packageDescription . '</textarea></div>';
 		echo '<div>';
