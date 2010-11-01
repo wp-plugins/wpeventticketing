@@ -115,6 +115,11 @@ float: left;
 width: 50%;
 }
 
+#event_manipulation {
+float: right;
+width: 50%;
+}
+
 #attendeeGraph {
 width: 40%;
 padding-top: 52px;

@@ -9,7 +9,6 @@ Author URI: http://9seeds.com/
 */
 
 register_activation_hook(__FILE__, array("eventTicketingSystem", "activate"));
-//register_deactivation_hook(__FILE__, array("eventTicketingSystem", "deactivate"));
 add_action('admin_init', array("eventTicketingSystem", "adminscripts"));
 add_action('wp_print_styles', array("eventTicketingSystem", "frontendscripts"));
 add_action('admin_menu', array("eventTicketingSystem", "options"));
@@ -70,31 +69,27 @@ class eventTicketingSystem
 		add_submenu_page('eventticketing', 'Paypal', 'Paypal', 'activate_plugins', 'ticketpaypal', array('eventTicketingSystem', 'ticketPaypalControl'));
 		add_submenu_page('eventticketing', 'Messages', 'Messages', 'activate_plugins', 'ticketmessages', array('eventTicketingSystem', 'ticketMessagesControl'));
 		add_submenu_page('eventticketing', 'Notify Attendees', 'Notify Attendees', 'activate_plugins', 'ticketnotify', array('eventTicketingSystem', 'ticketNotify'));
-		add_submenu_page('eventticketing', 'Create/Edit Attendees', 'Create/Edit Attendees', 'activate_plugins', 'ticketattendeeedit', array('eventTicketingSystem', 'ticketAttendeeEdit'));
+		add_submenu_page('eventticketing', 'Attendees', 'Attendees', 'activate_plugins', 'ticketattendeeedit', array('eventTicketingSystem', 'ticketAttendeeEdit'));
 		add_submenu_page('eventticketing', 'Instructions', 'Instructions', 'activate_plugins', 'ticketinstructions', array('eventTicketingSystem', 'ticketInstructions'));
-		add_submenu_page('eventticketing', 'Reset Event', 'Reset Event', 'activate_plugins', 'ticketreset', array('eventTicketingSystem', 'ticketReset'));
 	}
 
 	function ticketInstructions()
 	{
-		echo '<div class="instructional">Create all the options you want for each ticket. This is the information you would ask of each person attending your event such as personal info (name/address/phone) or shirt size or meal preference</div>
+		echo '
+			1) <strong>Ticket Options:</strong> Create all the options you want for each ticket. This is the information you would ask of each person attending your event such as personal info (name/address/phone) or shirt size or meal preference<br /><br />
 			
-			<div class="instructional">Create a ticket and attach the options you want for that ticket. <strong>Add the options in the order you want them displayed on the form when someone purchases a ticket</strong><p style="font-style: italic;"><strong>Example:</strong> Create two types of tickets which are the same where one doesn\'t ask for shirt size since a shirt isn\'t included</div>
+			2) <strong>Tickets:</strong> Create a ticket and attach the options you want for that ticket. <strong>Add the options in the order you want them displayed on the form when someone purchases a ticket</strong><p style="font-style: italic;"><br /><br />
 			
-			<div class="instructional">Create a package and attach a ticket to it. This is where you determine the price for the event.<p style="font-style: italic;"><strong>Example:</strong> You have defined a single standard ticket called Regular. Attach Regular to the package with a quantity of 1, give it a price which is $10 less than full admission and give it an active date which will end a month before the event and a quantity of 50. With this you have created an early bird ticket which will expire either a month before the event occurs or when 50 of them are sold, whichever comes first<p style="font-style: italic;"><strong>Example:</strong> Create a package and attach Regular to the package with a quantity of 4 and give this package a price of $500. This would be like a sponsorship package where you are bundling some free tickets to go along with a sponsorship</div>
+			3) <strong>Packages</strong> Create a package and attach a ticket to it. This is where you determine the price for the event.<br /><br />
 			
-			<div class="instructional">Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantites if they are set. At no point will you sell more than this many tickets to the event.</div>
+			4) <strong>Attendance</strong> Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantites if they are set. At no point will you sell more than this many tickets to the event.<br /><br />
 			
-			<div class="instructional">Set your paypal info. None of this is going to work if you cannot get paid. Follow <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">these instructions at Paypal</a> to get your API signature</div>
+			5) <strong>Paypal</strong> Set your paypal info. None of this is going to work if you cannot get paid. Follow <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">these instructions at Paypal</a> to get your API signature<br /><br />
 			
-			<div class="instructional">Coupons are codes you will create and attach to a package for a one time use to give to someone to turn in for a freebie. Owe someone a favor or have them pay you by check? Just generate a coupon and welcome them to the event!</div>
+			6) <strong>Coupons</strong> Coupons are codes you will create and attach to a package for a one time use to give to someone to turn in for a freebie. Owe someone a favor or have them pay you by check? Just generate a coupon and welcome them to the event!<br /><br />
 			
-			<div class="instructional">This section controls the messages that your customers will see in email and on the screen as they purchase tickets to the event</div>';
-	}
-
-	function ticketReset()
-	{
-		echo "OH GOD WHAT ARE YOU DOING HERE DON'T CLICK ANYTHING!";
+			7) <strong>Messages</strong> This section controls the messages that your customers will see in email and on the screen as they purchase tickets to the event<br /><br />
+		';
 	}
 
 	function ticketAttendeeEdit()
@@ -108,6 +103,8 @@ class eventTicketingSystem
 		{
 			$hashes = eventTicketingSystem::ticketSellPackage($_REQUEST["manualCreatePackageId"]);
 			$_REQUEST["tickethash"] = $hashes["ticketHash"][0];
+			
+			echo '<div id="icon-users" class="icon32"></div><h2>Create Attendee</h2>';
 			eventTicketingSystem::ticketEditScreen();
 		}	
 
@@ -122,12 +119,12 @@ class eventTicketingSystem
 		{
 			if(isset($_REQUEST["edit"]) && is_numeric($_REQUEST["edit"]) && $_REQUEST["edit"] == 1)
 			{
-				echo '<div id="icon-users" class="icon32"></div><h2>Attendee</h2>';
+				echo '<div id="icon-users" class="icon32"></div><h2>Edit Attendee</h2>';
 				eventTicketingSystem::ticketEditScreen();
 			}	
 			elseif(isset($_REQUEST["del"]) && is_numeric($_REQUEST["del"]) && $_REQUEST["del"] == 1)
 			{
-				//echo '<pre>'.print_r($package,true).'</pre>';
+				//echo '<pre>'.print_r($_REQUEST,true).'</pre>';
 				
 				$ticketHash = $_REQUEST["tickethash"];
 				$packageHash = get_option('ticket_'.$ticketHash);
@@ -149,28 +146,27 @@ class eventTicketingSystem
 			}
 		}
 		
-		
-		if(is_array($o["packageProtos"]))
+		if(!(is_numeric($_REQUEST["edit"]) || is_numeric($_REQUEST["manualCreatePackageId"])))
 		{
-			echo '<div id="icon-users" class="icon32"></div><h2>Create Manual Ticket</h2>';
-			echo '<form method="post" action="">';
-			echo '<input type="hidden" name="manualCreatePackageNonce" id="manualCreatePackageNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
-			echo 'Package Type: <select name="manualCreatePackageId" id="manualCreatePackageId">';
-			foreach($o["packageProtos"] as $p)
+			if(is_array($o["packageProtos"]))
 			{
-				echo '<option value="'.$p->packageId.'">'.$p->displayName().'</option>';
+				echo '<div id="icon-users" class="icon32"></div><h2>Create Manual Ticket</h2>';
+				echo '<form method="post" action="">';
+				echo '<input type="hidden" name="manualCreatePackageNonce" id="manualCreatePackageNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+				echo 'Package Type: <select name="manualCreatePackageId" id="manualCreatePackageId">';
+				foreach($o["packageProtos"] as $p)
+				{
+					echo '<option value="'.$p->packageId.'">'.$p->displayName().'</option>';
+				}
+				echo '</select><br />';
+				echo '<input type="submit" class="button-primary" name="submitbutt" val="Create Ticket">';
+				echo '</form>';
+				echo '</div>';
 			}
-			echo '</select><br />';
-			echo '<input type="submit" class="button-primary" name="submitbutt" val="Create Ticket">';
-			echo '</form>';
-			echo '</div>';
+			
+			echo '<div id="icon-users" class="icon32"></div><h2>Attendee List</h2>';
+			eventTicketingSystem::generateAttendeeTable(urldecode($_REQUEST["attendeesort"]));
 		}
-		
-		//echo '<br /><br />';	
-		
-		echo '<div id="icon-users" class="icon32"></div><h2>Attendee List</h2>';
-		eventTicketingSystem::generateAttendeeTable(urldecode($_REQUEST["attendeesort"]));
-		
 		echo '</div>';
 	}
 
@@ -217,10 +213,11 @@ class eventTicketingSystem
 	
 	function ticketNotify()
 	{
+		$o = get_option("eventTicketingSystem");
+		
 		if (wp_verify_nonce($_POST['attendeeNotificationNonce'], plugin_basename(__FILE__)))
 		{
 			global $wpdb;
-			$o = get_option("eventTicketingSystem");
 			$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
 			$bccList = array();
 			if (is_array($packages))
@@ -253,9 +250,16 @@ class eventTicketingSystem
 
 			//WP -always- quotes so we have to -always- stripslashes
 			$note = stripslashes($_POST["attendeeNotificationBody"]);
+			$subj = stripslashes($_POST["attendeeNotificationSubj"]);
 
-			wp_mail($o["messages"]["messageEmailFromEmail"], "Message about ".$o["messages"]["messageEventName"], $note , $headers);
-			 
+			wp_mail($o["messages"]["messageEmailFromEmail"], $subj , $note , $headers);
+
+			$msg = array("date"=>date("m/d/Y H:i:s"),"subj"=>$subj,"body"=>$note);
+
+			$o["messages"]["sentMessages"][] = $msg;
+
+			update_option("eventTicketingSystem",$o);
+
 			echo '<div id="message" class="updated">';
 			echo '<p>Notifcation Sent</p>';
 			echo '</div>';
@@ -266,9 +270,34 @@ class eventTicketingSystem
 		echo 'Type your message below and hit send. You will recieve a copy of the message as well<br />';
 		echo '<form action="" method="post">';
 		echo '<input type="hidden" name="attendeeNotificationNonce" id="attendeeNotificationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo 'Subject: <input name="attendeeNotificationSubj" size="80" value="Message about '.$o["messages"]["messageEventName"].'">';
 		echo '<textarea rows="10" cols="80" name="attendeeNotificationBody"></textarea><br />';
 		echo '<input class="button-primary" type="submit" name="submitbutt" value="Send Notification">';
 		echo '</form>';
+		
+
+		if(is_numeric($_REQUEST["messageId"]))
+		{
+			echo '<div class="instructional">';
+			echo '<strong>Date: </strong>'.$o["messages"]["sentMessages"][$_REQUEST["messageId"]]["date"].'<br >';
+			echo '<strong>Subject: </strong>'.$o["messages"]["sentMessages"][$_REQUEST["messageId"]]["subj"].'<br />';
+			echo '<strong>Body: </strong>'.$o["messages"]["sentMessages"][$_REQUEST["messageId"]]["body"].'<br />';
+			echo '</div>';
+		}
+		
+		if(is_array($o["messages"]["sentMessages"]))
+		{
+			echo '<table class="widefat">';
+			echo '<thead><tr><th>Date Sent</th><th>Subject</th><th>Body</th></tr></thead>';
+			echo '<tbody>';
+			foreach($o["messages"]["sentMessages"] as $id => $m)
+			{
+				echo '<tr><td><a href="'.admin_url("admin.php?page=ticketnotify&messageId=".$id).'">'.$m["date"].'</a></td><td>'.substr($m["subj"],0,40).'</td><td>'.substr($m["body"],0,80).'</td></tr>';
+			}
+			echo'</tbody>';
+			echo '</table>';
+		}
+		
 		echo '</div>';
 	}
 	
@@ -395,6 +424,21 @@ class eventTicketingSystem
 	{
 		global $wpdb;
 		$o = get_option("eventTicketingSystem");
+		
+		if (wp_verify_nonce($_POST['eventManipulationNonce'], plugin_basename(__FILE__)))
+		{
+			if($_REQUEST['eventStatusSwitch'] == 1)
+			{
+				$o['eventTicketingStatus'] == 1 ? $o['eventTicketingStatus'] = 0 : $o['eventTicketingStatus'] = 1;
+				update_option('eventTicketingSystem',$o);
+			}
+			if($_REQUEST["eventReset"] == 1)
+			{
+				eventTicketingSystem::deactivate();
+				eventTicketingSystem::activate();
+			}
+		}
+		
 		$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
 		if (is_array($packages))
 		{
@@ -514,7 +558,7 @@ class eventTicketingSystem
 		//end counts table
 		echo '</div>';
 		echo '<div id="attendeeGraph">';
-		echo '<img src="http://chart.apis.google.com/chart?chs=300x150&cht=p3&chd=t:'.$total.','.($o["eventAttendance"]-$total).'&chdl=Sold|Left&chp=0.628&chl=' . $total . '|' . ($o["eventAttendance"] - $total) . '&chtt=Attendance">';
+		echo '<img src="http://chart.apis.google.com/chart?chs=300x150&cht=p3&chd=t:'.number_format($total/1000,3).','.number_format(($o["eventAttendance"]-$total)/1000,3).'&chdl=Sold|Left&chp=0.628&chl=' . $total . '|' . ($o["eventAttendance"] - $total) . '&chtt=Attendance">';
 		echo '</div>';
 		
 		if (is_array($attendee))
@@ -533,10 +577,10 @@ class eventTicketingSystem
 					$th[$ticketType]['Sold Time'] = 'Sold Time';
 					$trtmp['Sold Time'] = date("m/d/Y H:i:s",$ticket->soldTime);
 
-					foreach ($ticket->ticketOptions as $o)
+					foreach ($ticket->ticketOptions as $to)
 					{
-						$th[$ticketType][$o->displayName] = $o->displayName;
-						$trtmp[$o->displayName] = $o->value;
+						$th[$ticketType][$to->displayName] = $to->displayName;
+						$trtmp[$to->displayName] = $to->value;
 					}
 					$trtmp["final"] = $ticket->final;
 					$trtmp["orderdetails"] = $ticket->orderDetails;
@@ -568,9 +612,9 @@ class eventTicketingSystem
 					$summary[$to[$s]]++;
 				}
 				ksort($summary);
-				foreach($summary as $o => $count)
+				foreach($summary as $op => $count)
 				{
-					echo '<tr><td>'.(strlen($o) ? $o : "No reponse").'</td><td>'.$count.'</td></tr>';
+					echo '<tr><td>'.(strlen($op) ? $op : "No reponse").'</td><td>'.$count.'</td></tr>';
 				}
 				echo '</tbody>';
 				echo '</table>';
@@ -587,67 +631,25 @@ class eventTicketingSystem
 			echo '</tbody>';
 			echo '</table>';
 			echo '</div>';
-			
-			echo '<div id="ticket_sales_bottom">';
-			echo '<div id="icon-users" class="icon32"></div><h2>Attendees</h2>';
-			
-			
-			
-			foreach ($th as $k => $v)
-			{
-				echo "<table class='widefat'>";
-				echo "<thead>";
-				echo "<tr>";
-				echo '<th>&nbsp;</th>';
-				foreach ($v as $header)
-				{
-					$headerkey[] = $header;
-					echo '<th>' . $header . '</th>';
-				}
-				echo "</tr>";
-				echo "</thead>";
-				echo '<tbody>';
-				$c = 0;
-				$csv = implode(',',$headerkey)."\n";
-				foreach ($tr as $data)
-				{
-					$c++;
-					if(!$data["final"])
-					{
-						echo '<tr style="background-color:LightPink;">';
-						echo '<td><a href="'.admin_url("admin.php?page=ticketattendeeedit&tickethash=".$data['hash']).'">' . $c . '</a></td>';
-						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
-						//echo '<pre>'.print_r($data,true).'</pre>';exit;
-						$tcsv = array($data["Sold Time"],$data["orderdetails"]["name"],$data["orderdetails"]["email"]);
-						$csv .= implode(',',$tcsv)."\n";
-					}
-					else
-					{
-						echo '<tr>';
-						echo '<td><a href="http://2010.nyc.wordcamp.org/tickets/?tickethash='.$data["hash"].'" target="_blank">' . $c . '</a></td>';
-						$tcsv = '';
-						foreach ($headerkey as $key)
-						{
-							echo '<td>' . (strlen($data[$key]) ? $data[$key] : "&nbsp;") . '</td>';
-							$tcsv .= '"'.$data[$key].'",';
-						}
-						$csv .= substr($tcsv,0,-1)."\n";
-					}
-					echo '</tr>';
-				}
-				echo '<tr><td colspan="'.count($headerkey).'">';
-				echo '<form action="" method="post">
-            	<input type="hidden" name="exportAttendeeNonce" id="exportAttendeeNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
-				<input type="hidden" name="attendeeCsv" value="'.base64_encode($csv).'">
-				<input type="submit" class="button-primary" name="submit" value="Export Attendee List">
-				</form>';
-				echo '</td></tr>';
-				echo '</tbody>';
-				echo '</table>';
-				
-			}
 		}
-		echo '</div></div>';
+			
+		//Start/Stop/Reset Event Screen
+		echo '<div id="event_manipulation">';
+		echo '<div id="icon-tools" class="icon32"></div><h2>Event Control</h2>';
+		echo '<form name="eventManipulationForm" action="" method="post">';
+		echo '<input type="hidden" name="eventReset" value="">';
+		echo '<input type="hidden" name="eventStatusSwitch" value="">';
+		echo '<input type="hidden" name="eventManipulationNonce" id="eventManipulationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<table class="widefat">';
+		echo '<tbody>';
+		echo '<tr><td>Turn registration on and off with this button. Registration is currently <strong>'.($o['eventTicketingStatus'] ? 'On' : 'Off').'</strong> </td><td><input type="button" value="Start/Stop Registration" onClick="javascript:document.eventManipulationForm.eventStatusSwitch.value=\'1\';document.eventManipulationForm.submit(); return false;"></td></tr>';
+		echo '<tr><td>Reset event. <em>Warning</em>: <strong>Clicking the reset button will wipe all your data!</strong> This resets the plugin so you can create a new event</td><td><input type="button" value="Reset Event" onClick="javascript:document.eventManipulationForm.eventReset.value=\'1\';if(confirm(\'Are you sure you want to reset the event? All event data will be wiped and reset and this cannot be undone\')) document.eventManipulationForm.submit(); return false;"></td></tr>';
+		echo '</tbody>';
+		echo '</table>';
+		echo '</form>';
+		echo '</div>';
+		
+		echo '</div>';
 	}
 
 	function ticketOptionsControl()
