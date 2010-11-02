@@ -44,7 +44,7 @@ margin-left: 52px;
 
 #ticket_holder_left {
 
-width: 30%;
+width: 400px;
 float: left;
 
 }
@@ -115,9 +115,9 @@ float: left;
 width: 50%;
 }
 
-#event_manipulation {
-float: right;
-width: 50%;
+.settings_page {
+	clear: both;
+	float: left;
 }
 
 #attendeeGraph {

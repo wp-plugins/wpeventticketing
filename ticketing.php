@@ -27,13 +27,6 @@ class eventTicketingSystem
 		}
 	}
 
-	function deactivate()
-	{
-		global $wpdb;
-		delete_option("eventTicketingSystem");
-		$wpdb->query("delete from {$wpdb->options} where option_name like 'package_%' OR option_name like 'ticket_%' OR option_name like 'coupon_%' OR option_name like 'paypal_%'");
-	}
-
 	function adminscripts()
 	{
 		//look for export button being clicked, export attendee list as csv
@@ -65,12 +58,13 @@ class eventTicketingSystem
 		add_submenu_page('eventticketing', 'Tickets', 'Tickets', 'activate_plugins', 'tickettickets', array('eventTicketingSystem', 'ticketTicketsControl'));
 		add_submenu_page('eventticketing', 'Packages', 'Packages', 'activate_plugins', 'ticketpackages', array('eventTicketingSystem', 'ticketPackagesControl'));
 		add_submenu_page('eventticketing', 'Coupons', 'Coupons', 'activate_plugins', 'ticketcoupons', array('eventTicketingSystem', 'ticketCouponsControl'));
-		add_submenu_page('eventticketing', 'Attendance', 'Attendance', 'activate_plugins', 'ticketevents', array('eventTicketingSystem', 'ticketEventsControl'));
-		add_submenu_page('eventticketing', 'Paypal', 'Paypal', 'activate_plugins', 'ticketpaypal', array('eventTicketingSystem', 'ticketPaypalControl'));
-		add_submenu_page('eventticketing', 'Messages', 'Messages', 'activate_plugins', 'ticketmessages', array('eventTicketingSystem', 'ticketMessagesControl'));
+		//add_submenu_page('eventticketing', 'Attendance', 'Attendance', 'activate_plugins', 'ticketevents', array('eventTicketingSystem', 'ticketEventsControl'));
+		//add_submenu_page('eventticketing', 'Paypal', 'Paypal', 'activate_plugins', 'ticketpaypal', array('eventTicketingSystem', 'ticketPaypalControl'));
+		//add_submenu_page('eventticketing', 'Messages', 'Messages', 'activate_plugins', 'ticketmessages', array('eventTicketingSystem', 'ticketMessagesControl'));
 		add_submenu_page('eventticketing', 'Notify Attendees', 'Notify Attendees', 'activate_plugins', 'ticketnotify', array('eventTicketingSystem', 'ticketNotify'));
 		add_submenu_page('eventticketing', 'Attendees', 'Attendees', 'activate_plugins', 'ticketattendeeedit', array('eventTicketingSystem', 'ticketAttendeeEdit'));
 		add_submenu_page('eventticketing', 'Instructions', 'Instructions', 'activate_plugins', 'ticketinstructions', array('eventTicketingSystem', 'ticketInstructions'));
+		add_submenu_page('eventticketing', 'Settings', 'Settings', 'activate_plugins', 'ticketsettings', array('eventTicketingSystem', 'ticketSettings'));
 	}
 
 	function ticketInstructions()
@@ -90,6 +84,246 @@ class eventTicketingSystem
 			
 			7) <strong>Messages</strong> This section controls the messages that your customers will see in email and on the screen as they purchase tickets to the event<br /><br />
 		';
+	}
+
+	function ticketSettings()
+	{
+		$o = get_option("eventTicketingSystem");
+		//echo '<pre>'.print_r($_REQUEST,true).'</pre>';	
+		echo '<div class="wrap">';
+		echo '<div class="settings_page"';
+		/*
+		 * PAYPAL SETTINGS
+		 */
+		if (wp_verify_nonce($_POST['ticketPaypalNonce'], plugin_basename(__FILE__)))
+		{
+			$o["paypalInfo"] = array(
+				"paypalAPIUser" => trim($_REQUEST["paypalAPIUser"]),
+				"paypalAPIPwd" => trim($_REQUEST["paypalAPIPwd"]),
+				"paypalAPISig" => trim($_REQUEST["paypalAPISig"]),
+				"paypalEnv" => trim($_REQUEST["paypalEnv"])
+			);
+			update_option("eventTicketingSystem", $o);
+			echo '<div id="message" class="updated"><p>Paypal settings have been saved.</p></div>';
+		}
+
+		echo '<div id="icon-users" class="icon32"></div><h2>Paypal Settings</h2>';
+		echo '<form method="post" action="">
+			<input type="hidden" name="ticketPaypalNonce" id="ticketPaypalNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+
+			<table class="form-table">			
+			<tr valign="top" id="tags">
+				<th scope="row"><label for="paypalEnv">Environment: </label></th>
+				<td><select id="paypalEnv" name="paypalEnv"/>
+					<option value="live" ' . ($o["paypalInfo"]["paypalEnv"] == "live" ? "selected" : "") . '>Live</option>
+					<option value="sandbox" ' . ($o["paypalInfo"]["paypalEnv"] == "sandbox" ? "selected" : "") . '>Sandbox (for testing)</option>
+				</select></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="paypalAPIUser">API User: </label></th>
+				<td><input id="paypalAPIUser" type="text" maxlength="110" size="45" name="paypalAPIUser" value="' . $o["paypalInfo"]["paypalAPIUser"] . '" /></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="paypalAPIPwd">API Password: </label></th>
+				<td><input id="paypalAPIPwd" type="text" maxlength="110" size="24" name="paypalAPIPwd" value="' . $o["paypalInfo"]["paypalAPIPwd"] . '" /></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="paypalAPISig">API Signature: </label></th>
+				<td><input id="paypalAPISig" type="text" maxlength="110" size="75" name="paypalAPISig" value="' . $o["paypalInfo"]["paypalAPISig"] . '" /></td>
+				
+			</tr>
+			<tr valign="top">
+				
+				<td><input class="button-primary" type="submit" name="submitbutton" value="Save Paypal Info" id="submitbutton"/></td>
+			</tr>
+			
+			</table>
+			
+		</form>';
+
+		//echo '<div class="instructional">Set your paypal info. None of this is going to work if you cannot get paid. Follow <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">these instructions at Paypal</a> to get your API signature</div>';
+		echo '</div>';
+		/*
+		 *End Paypal
+		 */
+		
+		/*
+		 * Messages
+		 */	
+		if (wp_verify_nonce($_POST['ticketMessagesNonce'], plugin_basename(__FILE__)))
+		{
+			$o["messages"] = array(
+				"messageEventName" => trim(stripslashes($_REQUEST["messageEventName"])),
+				"messageThankYou" => trim(stripslashes($_REQUEST["messageThankYou"])),
+				"messageEmailFromName" => trim(stripslashes($_REQUEST["messageEmailFromName"])),
+				"messageEmailFromEmail" => trim(stripslashes($_REQUEST["messageEmailFromEmail"])),
+				"messageEmailBody" => trim(stripslashes($_REQUEST["messageEmailBody"])),
+				"messageEmailSubj" => trim(stripslashes($_REQUEST["messageEmailSubj"])),
+				"messageEmailBcc" => trim(stripslashes($_REQUEST["messageEmailBcc"])),
+			);
+			update_option("eventTicketingSystem", $o);
+			echo '<div id="message" class="updated"><p>Message settings have been saved.</p></div>';
+		}
+		echo '<div class="settings_page">';
+		echo '<div id="icon-users" class="icon32"></div><h2>Thank You Page</h2>';
+		echo '<form method="post" action="">
+			<input type="hidden" name="ticketMessagesNonce" id="ticketMessagesNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+			<table class="form-table">			
+			<tr valign="top">
+				<th scope="row"><label for="messageThankYou">Thank You Page:</label></th>
+				<td><textarea id="messageThankYou" name="messageThankYou" rows="10" cols="80"/>' . $o["messages"]["messageThankYou"] . '</textarea></td>
+			</tr>
+			<tr valign="top">
+				<td><input class="button-primary" type="submit" name="submitbutton" value="Save Thank You Page" id="submitbutton"/></td>
+			</tr>
+			</table>';
+		echo '</div>';
+		echo '<div class="settings_page">';
+		echo '<div id="icon-users" class="icon32"></div><h2>Email Messages</h2>';
+		echo '<table class="form-table">			
+			<tr valign="top">
+				<th scope="row"><label for="messageEventName">Event Name:</label></th>
+				<td><input id="messageEventName" type="text" name="messageEventName" size="80" value="' . $o["messages"]["messageEventName"] . '"></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="messageEmailFromName">Email From Name:</label></th>
+				<td><input id="messageEmailFromName" type="text" name="messageEmailFromName" size="40" value="' . $o["messages"]["messageEmailFromName"] . '"></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="messageEmailFromEmail">Email From Email:</label></th>
+				<td><input id="messageEmailFromEmail" type="text" name="messageEmailFromEmail" size="40" value="' . $o["messages"]["messageEmailFromEmail"] . '"></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="messageEmailSubj">Email Subject:</label></th>
+				<td><input id="messageEmailSubj" type="text" name="messageEmailSubj" size="80" value="' . $o["messages"]["messageEmailSubj"] . '"></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="messageEmailBody">Email Body:</label></th>
+				<td><textarea id="messageEmailBody" name="messageEmailBody" rows="10" cols="80"/>' . $o["messages"]["messageEmailBody"] . '</textarea></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="messageEmailBcc">Organizers email for notifications:</label></th>
+				<td><input id="messageEmailBcc" type="text" name="messageEmailBcc" size="40" value="' . $o["messages"]["messageEmailBcc"] . '"></td>
+			</tr>
+			<tr valign="top">
+				<td><input class="button-primary" type="submit" name="submitbutton" value="Save Email Messages" id="submitbutton"/></td>
+			</tr>
+			</table>
+			</form>';
+		//echo '<div class="instructional">This section controls the messages that your customers will see in email and on the screen as they purchase tickets to the event</div>';
+		echo '</div>';
+
+		/*
+		 * end messages
+		 */
+
+		/*
+		 * Attendance display
+		 */
+		echo '<div class="settings_page">';
+		echo '<div id="icon-users" class="icon32"></div><h2>Event Attendance Maximum</h2>';
+		echo '<form method="post" action="" name="eventAttendance">
+		<input type="hidden" name="eventAttendanceNonce" id="eventAttendanceNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+		<input type="hidden" name="edit" value="" />';
+		if (wp_verify_nonce($_POST['eventAttendanceNonce'], plugin_basename(__FILE__)))
+		{
+			if (is_numeric($_REQUEST["eventAttendanceMax"]))
+			{
+				$o["eventAttendance"] = $_REQUEST["eventAttendanceMax"];
+				$o["displayPackageQuantity"] = $_REQUEST["displayPackageQuantity"];
+				update_option("eventTicketingSystem", $o);
+			}
+		}
+		
+		echo '<div id="ticket_events_edit">';
+		echo '<table><tr><td>Maximum Attendance</td><td><input type="text" value="' . $o["eventAttendance"] . '" name="eventAttendanceMax" size="4" /></td></tr>';
+		echo '<tr><td>Display Totals in Form</td><td><input type="checkbox" value="1" name="displayPackageQuantity" ' . ($o["displayPackageQuantity"] == 1 ? "checked" : "") . '></td></tr>';
+		echo '<tr><td colspan="2"><input type="submit" class="button-primary" name="submitbutt" value="Update Maximum Attendance" /></td></tr></table>';
+		echo '</div>';
+	
+		echo '</form>';
+
+		echo "</div>";
+
+		//echo '<div class="instructional">Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantites if they are set. At no point will you sell more than this many tickets to the event.</div>';
+		echo '</div>';
+
+		/*
+		 * end attendance
+		 */	
+		
+		/*
+		 * Event Control
+		 */
+		//Start/Stop/Reset Event Screen
+		echo '<div class="settings_page">';
+		echo '<pre>'.print_r($_REQUEST,true).'</pre>'; 
+		if (wp_verify_nonce($_POST['eventManipulationNonce'], plugin_basename(__FILE__)))
+		{
+			if($_REQUEST['eventStatusSwitch'] == 1)
+			{
+				$o['eventTicketingStatus'] == 1 ? $o['eventTicketingStatus'] = 0 : $o['eventTicketingStatus'] = 1;
+				update_option('eventTicketingSystem',$o);
+			}
+			if($_REQUEST["eventReset"] == 1)
+			{
+				global $wpdb;
+				$wpdb->query("delete from {$wpdb->options} where option_name like 'package_%' OR option_name like 'ticket_%' OR option_name like 'coupon_%' OR option_name like 'paypal_%'");
+				//echo '<pre>'.print_r($o,true).'</pre>';
+				unset($o["packageQuantities"]);
+
+				if(is_numeric($_REQUEST["eventResetOptions"]))
+				{
+					if($_REQUEST["eventResetOptions"] == 1)
+					{
+						unset($o["packageProtos"]);
+					}
+					if($_REQUEST["eventResetOptions"] == 2)
+					{
+						unset($o["packageProtos"]);
+						unset($o["ticketProtos"]);
+					}
+					if($_REQUEST["eventResetOptions"] == 3)
+					{
+						unset($o["packageProtos"]);
+						unset($o["ticketProtos"]);
+						unset($o["ticketOptions"]);
+					}
+				}
+				if(isset($_REQUEST["eventResetCoupons"]) && $_REQUEST["eventResetCoupons"] == 1)
+				{
+					unset($o["coupons"]);
+				}
+			
+				update_option("eventTicketingSystem",$o);
+			}
+		}
+		echo '<div id="icon-tools" class="icon32"></div><h2>Event Control</h2>';
+		echo '<form name="eventManipulationForm" action="" method="post">';
+		echo '<input type="hidden" name="eventReset" value="">';
+		echo '<input type="hidden" name="eventStatusSwitch" value="">';
+		echo '<input type="hidden" name="eventManipulationNonce" id="eventManipulationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<table class="widefat">';
+		echo '<tbody>';
+		echo '<tr><td>Turn registration on and off with this button. Registration is currently <strong>'.($o['eventTicketingStatus'] ? 'On' : 'Off').'</strong> </td><td><input type="button" value="Start/Stop Registration" onClick="javascript:document.eventManipulationForm.eventStatusSwitch.value=\'1\';document.eventManipulationForm.submit(); return false;"></td></tr>';
+		echo '<tr><td>Reset event. <em>Warning</em>: <strong>Clicking the reset button will wipe all your sold tickets, coupons, attendee list and reporting!</strong> This resets the plugin so you can create a new event. Uncheck the boxes to save ticket, package and ticket option definitions</td><td><input type="button" value="Reset Event" onClick="javascript:if(confirm(\'Are you sure you want to reset the event? All event data will be wiped and reset and this cannot be undone\')) { document.eventManipulationForm.eventReset.value=\'1\'; document.eventManipulationForm.submit(); } else { return false; }">
+			<table>
+			<tr><th colspan="2">Also Delete</th></tr>
+			<tr><td>Package definitions</td><td><input type="radio" value="1" name="eventResetOptions"></td></tr>
+			<tr><td>Ticket & package definitions</td><td><input type="radio" value="2" name="eventResetOptions"></td></tr>
+			<tr><td>Ticket, ticket options and package definitions</td><td><input type="radio" value="3" name="eventResetOptions" checked></td></tr>
+			<tr><td>Coupon Definitions</td><td><input type="checkbox" value="1" name="eventResetCoupons" checked></td></tr>
+			</table>
+			</td></tr>';
+		echo '</tbody>';
+		echo '</table>';
+		echo '</form>';
+		echo '</div>';
+		/*
+		 * end event control
+		 */
+
+echo '</div>';
 	}
 
 	function ticketAttendeeEdit()
@@ -425,19 +659,6 @@ class eventTicketingSystem
 		global $wpdb;
 		$o = get_option("eventTicketingSystem");
 		
-		if (wp_verify_nonce($_POST['eventManipulationNonce'], plugin_basename(__FILE__)))
-		{
-			if($_REQUEST['eventStatusSwitch'] == 1)
-			{
-				$o['eventTicketingStatus'] == 1 ? $o['eventTicketingStatus'] = 0 : $o['eventTicketingStatus'] = 1;
-				update_option('eventTicketingSystem',$o);
-			}
-			if($_REQUEST["eventReset"] == 1)
-			{
-				eventTicketingSystem::deactivate();
-				eventTicketingSystem::activate();
-			}
-		}
 		
 		$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
 		if (is_array($packages))
@@ -633,21 +854,6 @@ class eventTicketingSystem
 			echo '</div>';
 		}
 			
-		//Start/Stop/Reset Event Screen
-		echo '<div id="event_manipulation">';
-		echo '<div id="icon-tools" class="icon32"></div><h2>Event Control</h2>';
-		echo '<form name="eventManipulationForm" action="" method="post">';
-		echo '<input type="hidden" name="eventReset" value="">';
-		echo '<input type="hidden" name="eventStatusSwitch" value="">';
-		echo '<input type="hidden" name="eventManipulationNonce" id="eventManipulationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
-		echo '<table class="widefat">';
-		echo '<tbody>';
-		echo '<tr><td>Turn registration on and off with this button. Registration is currently <strong>'.($o['eventTicketingStatus'] ? 'On' : 'Off').'</strong> </td><td><input type="button" value="Start/Stop Registration" onClick="javascript:document.eventManipulationForm.eventStatusSwitch.value=\'1\';document.eventManipulationForm.submit(); return false;"></td></tr>';
-		echo '<tr><td>Reset event. <em>Warning</em>: <strong>Clicking the reset button will wipe all your data!</strong> This resets the plugin so you can create a new event</td><td><input type="button" value="Reset Event" onClick="javascript:document.eventManipulationForm.eventReset.value=\'1\';if(confirm(\'Are you sure you want to reset the event? All event data will be wiped and reset and this cannot be undone\')) document.eventManipulationForm.submit(); return false;"></td></tr>';
-		echo '</tbody>';
-		echo '</table>';
-		echo '</form>';
-		echo '</div>';
 		
 		echo '</div>';
 	}
@@ -1079,105 +1285,6 @@ class eventTicketingSystem
 		$o = get_option("eventTicketingSystem");
 		echo '<div id="ticket_events">';
 		echo "<div class='wrap'>";
-		echo '<div id="icon-users" class="icon32"></div><h2>Event Attendance Maximum</h2>';
-		echo '<form method="post" action="" name="eventAttendance">
-		<input type="hidden" name="eventAttendanceNonce" id="eventAttendanceNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
-		<input type="hidden" name="edit" value="" />';
-		if (wp_verify_nonce($_POST['eventAttendanceNonce'], plugin_basename(__FILE__)))
-		{
-			if ($_REQUEST["edit"] == 1)
-			{
-				echo '<div id="ticket_events_edit">';
-				echo '<table><tr><td>Maximum Attendance</td><td><input type="text" value="' . $o["eventAttendance"] . '" name="eventAttendanceMax" size="4" /></td></tr>';
-				echo '<tr><td>Display Totals in Form</td><td><input type="checkbox" value="1" name="displayPackageQuantity" ' . ($o["displayPackageQuantity"] == 1 ? "checked" : "") . '></td></tr>';
-				echo '<tr><td colspan="2"><input type="submit" class="button-primary" name="submitbutt" value="Update Total Ticket Quantity" /></td></tr></table>';
-				echo '</div>';
-			}
-			if (is_numeric($_REQUEST["eventAttendanceMax"]))
-			{
-				$o["eventAttendance"] = $_REQUEST["eventAttendanceMax"];
-				$o["displayPackageQuantity"] = $_REQUEST["displayPackageQuantity"];
-				update_option("eventTicketingSystem", $o);
-			}
-		}
-		echo '</form>';
-		echo "</div>";
-
-		echo "<table class='widefat'>";
-		echo "<thead>";
-		echo "<tr>";
-		echo "<th>Total Tickets To Sell</th>";
-		echo "<th>Actions</th>";
-		echo "</tr>";
-		echo "</thead>";
-		echo "<tbody>";
-
-		echo "<tr>";
-		echo '<td>' . $o["eventAttendance"] . '</td>';
-		echo '<td><a href="#" onclick="javascript:document.eventAttendance.edit.value=\'1\'; document.eventAttendance.submit();return false;">Edit</a></td>';
-
-		echo "</tr>";
-		echo "</tbody>";
-		echo "</table>";
-
-		echo '<div class="instructional">Set your maximum event attendance and whether or not you want to display remaining tickets on the ticket form. This number supercedes all the package quantites if they are set. At no point will you sell more than this many tickets to the event.</div></div>';
-	}
-
-	function ticketPaypalControl()
-	{
-		$o = get_option("eventTicketingSystem");
-
-		echo '<div class="wrap">';
-
-		if (wp_verify_nonce($_POST['ticketPaypalNonce'], plugin_basename(__FILE__)))
-		{
-			$o["paypalInfo"] = array(
-				"paypalAPIUser" => trim($_REQUEST["paypalAPIUser"]),
-				"paypalAPIPwd" => trim($_REQUEST["paypalAPIPwd"]),
-				"paypalAPISig" => trim($_REQUEST["paypalAPISig"]),
-				"paypalEnv" => trim($_REQUEST["paypalEnv"])
-			);
-			update_option("eventTicketingSystem", $o);
-			echo '<div id="message" class="updated"><p>Paypal settings have been saved.</p></div>';
-		}
-
-		echo '<div id="icon-users" class="icon32"></div><h2>Paypal Settings</h2>';
-		echo '<form method="post" action="">
-			<input type="hidden" name="ticketPaypalNonce" id="ticketPaypalNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
-			
-			
-
-			<table class="form-table">			
-			<tr valign="top" id="tags">
-				<th scope="row"><label for="paypalEnv">Environment: </label></th>
-				<td><select id="paypalEnv" name="paypalEnv"/>
-					<option value="live" ' . ($o["paypalInfo"]["paypalEnv"] == "live" ? "selected" : "") . '>Live</option>
-					<option value="sandbox" ' . ($o["paypalInfo"]["paypalEnv"] == "sandbox" ? "selected" : "") . '>Sandbox (for testing)</option>
-				</select></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="paypalAPIUser">API User: </label></th>
-				<td><input id="paypalAPIUser" type="text" maxlength="110" size="45" name="paypalAPIUser" value="' . $o["paypalInfo"]["paypalAPIUser"] . '" /></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="paypalAPIPwd">API Password: </label></th>
-				<td><input id="paypalAPIPwd" type="text" maxlength="110" size="24" name="paypalAPIPwd" value="' . $o["paypalInfo"]["paypalAPIPwd"] . '" /></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="paypalAPISig">API Signature: </label></th>
-				<td><input id="paypalAPISig" type="text" maxlength="110" size="75" name="paypalAPISig" value="' . $o["paypalInfo"]["paypalAPISig"] . '" /></td>
-				
-			</tr>
-			<tr valign="top">
-				
-				<td><input class="button-primary" type="submit" name="submitbutton" value="Save Paypal Info" id="submitbutton"/></td>
-			</tr>
-			
-			</table>
-			
-		</form>';
-
-		echo '<div class="instructional">Set your paypal info. None of this is going to work if you cannot get paid. Follow <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">these instructions at Paypal</a> to get your API signature</div></div>';
 	}
 
 	function ticketCouponsControl()
@@ -1307,68 +1414,6 @@ class eventTicketingSystem
 		echo '</form>';
 		echo '</div><div class="instructional">Coupons are codes you will create and attach to a package for a one time use to give to someone to turn in for a freebie. Owe someone a favor or have them pay you by check? Just generate a coupon and welcome them to the event!</div>';
 		echo '</div>';
-	}
-
-	function ticketMessagesControl()
-	{
-		$o = get_option("eventTicketingSystem");
-
-		echo '<div class="wrap">';
-
-		if (wp_verify_nonce($_POST['ticketMessagesNonce'], plugin_basename(__FILE__)))
-		{
-			$o["messages"] = array(
-				"messageEventName" => trim(stripslashes($_REQUEST["messageEventName"])),
-				"messageThankYou" => trim(stripslashes($_REQUEST["messageThankYou"])),
-				"messageEmailFromName" => trim(stripslashes($_REQUEST["messageEmailFromName"])),
-				"messageEmailFromEmail" => trim(stripslashes($_REQUEST["messageEmailFromEmail"])),
-				"messageEmailBody" => trim(stripslashes($_REQUEST["messageEmailBody"])),
-				"messageEmailSubj" => trim(stripslashes($_REQUEST["messageEmailSubj"])),
-				"messageEmailBcc" => trim(stripslashes($_REQUEST["messageEmailBcc"])),
-			);
-			update_option("eventTicketingSystem", $o);
-			echo '<div id="message" class="updated"><p>Message settings have been saved.</p></div>';
-		}
-
-		echo '<div id="icon-users" class="icon32"></div><h2>Email Message</h2>';
-		echo '<form method="post" action="">
-			<input type="hidden" name="ticketMessagesNonce" id="ticketMessagesNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
-			<table class="form-table">			
-			<tr valign="top">
-				<th scope="row"><label for="messageEventName">Event Name:</label></th>
-				<td><input id="messageEventName" type="text" name="messageEventName" size="80" value="' . $o["messages"]["messageEventName"] . '"></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="messageThankYou">Thank You Page:</label></th>
-				<td><textarea id="messageThankYou" name="messageThankYou" rows="10" cols="80"/>' . $o["messages"]["messageThankYou"] . '</textarea></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="messageEmailFromName">Email From Name:</label></th>
-				<td><input id="messageEmailFromName" type="text" name="messageEmailFromName" size="40" value="' . $o["messages"]["messageEmailFromName"] . '"></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="messageEmailFromEmail">Email From Email:</label></th>
-				<td><input id="messageEmailFromEmail" type="text" name="messageEmailFromEmail" size="40" value="' . $o["messages"]["messageEmailFromEmail"] . '"></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="messageEmailSubj">Email Subject:</label></th>
-				<td><input id="messageEmailSubj" type="text" name="messageEmailSubj" size="80" value="' . $o["messages"]["messageEmailSubj"] . '"></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="messageEmailBody">Email Body:</label></th>
-				<td><textarea id="messageEmailBody" name="messageEmailBody" rows="10" cols="80"/>' . $o["messages"]["messageEmailBody"] . '</textarea></td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="messageEmailBcc">Organizers email for notifications:</label></th>
-				<td><input id="messageEmailBcc" type="text" name="messageEmailBcc" size="40" value="' . $o["messages"]["messageEmailBcc"] . '"></td>
-			</tr>
-			<tr valign="top">
-				<td><input class="button-primary" type="submit" name="submitbutton" value="Save Messages" id="submitbutton"/></td>
-			</tr>
-			</table>
-			</form>';
-		echo '<div class="instructional">This section controls the messages that your customers will see in email and on the screen as they purchase tickets to the event</div></div>';
-
 	}
 
 	function shortcode()
