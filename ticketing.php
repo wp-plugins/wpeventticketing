@@ -257,7 +257,6 @@ class eventTicketingSystem
 		 */
 		//Start/Stop/Reset Event Screen
 		echo '<div class="settings_page">';
-		echo '<pre>'.print_r($_REQUEST,true).'</pre>'; 
 		if (wp_verify_nonce($_POST['eventManipulationNonce'], plugin_basename(__FILE__)))
 		{
 			if($_REQUEST['eventStatusSwitch'] == 1)
