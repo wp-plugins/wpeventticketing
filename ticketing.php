@@ -390,7 +390,7 @@ echo '</div>';
 			if(isset($_REQUEST["manualCreateWithRevenue"]))
 				$withRevenue = true;
 			
-			$hashes = eventTicketingSystem::ticketSellPackage($_REQUEST["manualCreatePackageId"], $withRevenue);
+			$hashes = eventTicketingSystem::ticketSellPackage($_REQUEST["manualCreatePackageId"], $withRevenue, $_REQUEST["manualCreateEmail"]);
 			$_REQUEST["tickethash"] = $hashes["ticketHash"][0];
 			
 			echo '<div id="icon-users" class="icon32"></div><h2>Create Attendee</h2>';
@@ -442,14 +442,17 @@ echo '</div>';
 				echo '<div id="icon-users" class="icon32"></div><h2>Create Manual Ticket</h2>';
 				echo '<form method="post" action="">';
 				echo '<input type="hidden" name="manualCreatePackageNonce" id="manualCreatePackageNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
-				echo 'Package Type: <select name="manualCreatePackageId" id="manualCreatePackageId">';
+				echo '<table>';
+				echo '<tr><td>Package Type:</td><td><select name="manualCreatePackageId" id="manualCreatePackageId">';
 				foreach($o["packageProtos"] as $p)
 				{
 					echo '<option value="'.$p->packageId.'">'.$p->displayName().'</option>';
 				}
-				echo '</select><br />';
-				echo 'Add ticket value to revenue report. <input type="checkbox" name="manualCreateWithRevenue"><br />';
-				echo '<input type="submit" class="button-primary" name="submitbutt" value="Create Ticket">';
+				echo '</select></td></tr>';
+				echo '<tr><td>Add ticket value to revenue report</td><td><input type="checkbox" name="manualCreateWithRevenue"></td></tr>';
+				echo '<tr><td>Email Address of receipient</td><td><input name="manualCreateEmail"></td></tr>';
+				echo '<tr><td colspan="2"><input type="submit" class="button-primary" name="submitbutt" value="Create Ticket"></td></tr>';
+				echo '</table>';
 				echo '</form>';
 
 			}
@@ -461,7 +464,7 @@ echo '</div>';
 		echo '</div>';
 	}
 
-	function ticketSellPackage($packageId, $withRevenue = false)
+	function ticketSellPackage($packageId, $withRevenue = false, $emailTo = '')
 	{
 		$o = get_option("eventTicketingSystem");
 		$price = $withRevenue ? $o["packageProtos"][$packageId]->price : 0;
@@ -473,7 +476,7 @@ echo '</div>';
 						"packageid" => $packageId
 		);
 		
-		$order = array("items" => $item, "email" => '', "name" => "Admin Generated");
+		$order = array("items" => $item, "email" => $emailTo, "name" => "Admin Generated");
 		$packageHash = md5(microtime() . $packageId);
 		$package = clone $o["packageProtos"][$packageId];
 		$package->setPackageId($packageHash);
@@ -501,6 +504,24 @@ echo '</div>';
 		//store packagequenitites and tickets sold
 		//should probably be in a different option
 		update_option("eventTicketingSystem", $o);
+
+		if(check_email_address($emailTo))
+		{
+			$c = 0;
+			$emaillinks = "\r\n";
+			foreach ($tickethashes as $hash)
+			{
+				$c++;
+				$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash;
+				$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
+			}
+
+			//$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
+			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
+			$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
+			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
+			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for $'.number_format($order["price"],2)."\r\n\r\n", $headers);
+		}		
 
 		return(array("packageHash"=>$packageHash,"ticketHash"=>$tickethashes));
 	}
@@ -621,6 +642,7 @@ echo '</div>';
 
 	function generateAttendeeTable($sort = 'Sold Time')
 	{
+		$o = get_option("eventTicketingSystem");
 		if(!strlen($sort))
 		{
 			$sort = 'Sold Time';
@@ -638,10 +660,10 @@ echo '</div>';
 					$th[$ticketType]['Sold Time'] = 'Sold Time';
 					$trtmp['Sold Time'] = date("m/d/Y H:i:s",$ticket->soldTime);
 
-					foreach ($ticket->ticketOptions as $o)
+					foreach ($ticket->ticketOptions as $op)
 					{
-						$th[$ticketType][$o->displayName] = $o->displayName;
-						$trtmp[$o->displayName] = $o->value;
+						$th[$ticketType][$op->displayName] = $op->displayName;
+						$trtmp[$op->displayName] = $op->value;
 					}
 					$trtmp["final"] = $ticket->final;
 					$trtmp["orderdetails"] = $ticket->orderDetails;
@@ -687,7 +709,7 @@ echo '</div>';
 					if(!$data["final"])
 					{
 						echo '<tr style="background-color:LightPink;">';
-						echo '<td><a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
+						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
 						echo '<td>'.$data["Sold Time"].'</td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
 						//echo '<pre>'.print_r($data,true).'</pre>';exit;
@@ -697,7 +719,7 @@ echo '</div>';
 					else
 					{
 						echo '<tr>';
-						echo '<td><a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
+						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
 						echo '</td>';
 						$tcsv = '';
 						foreach ($headerkey as $key)
@@ -1488,6 +1510,12 @@ echo '</div>';
 	function shortcode()
 	{
 		$o = get_option("eventTicketingSystem");
+	
+		if(!isset($o["registrationPermalink"]) || (isset($o["registrationPermalink"]) && $o["registrationPermalink"] != get_permalink()))
+		{
+			$o["registrationPermalink"] =  get_permalink();
+			update_option("eventTicketingSystem",$o);
+		}
 
 		ob_start();
 
@@ -1637,7 +1665,7 @@ echo '</div>';
 				
 				echo '<div class="info">' . str_replace('[ticketlinks]', $replaceThankYou, $o["messages"]["messageThankYou"]) . '</div>';
 				
-				$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
+				//$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
 				$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 				$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 				wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
