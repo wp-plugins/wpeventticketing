@@ -126,7 +126,7 @@ class eventTicketingSystem
 		echo '<div class="wrap">';
 		if(isset($_REQUEST["submitbutton"]) && $_REQUEST["submitbutton"] == 'Save Settings')
 		{
-			echo '<div id="message" class="updated"><p>Message settings have been saved.</p></div>';
+			echo '<div id="message" class="updated"><p>Settings have been saved.</p></div>';
 		}
 		echo '<div class="settings_page">';
 		/*
@@ -401,8 +401,6 @@ echo '</div>';
 		if (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32 && wp_verify_nonce($_POST['ticketInformationNonce'], plugin_basename(__FILE__)))
 		{
 			eventTicketingSystem::ticketEditScreen();
-		    echo '<div id="message" class="updated"><p>Message settings have been saved.</p></div>';
-
 		}
 
 		//edit or delete an existing ticket
@@ -451,7 +449,7 @@ echo '</div>';
 				}
 				echo '</select><br />';
 				echo 'Add ticket value to revenue report. <input type="checkbox" name="manualCreateWithRevenue"><br />';
-				echo '<input type="submit" class="button-primary" name="submitbutt" val="Create Ticket">';
+				echo '<input type="submit" class="button-primary" name="submitbutt" value="Create Ticket">';
 				echo '</form>';
 
 			}
