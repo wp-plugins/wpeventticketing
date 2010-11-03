@@ -1191,7 +1191,7 @@ echo '</div>';
 		}
 		else
 		{
-			echo '<div class="wrap"><h2>Create New Ticket</h2></div><br /><a href="#" class="button" onclick="javascript:document.ticketEdit.add.value=\'1\'; document.ticketEdit.submit();return false;">Add New Ticket</a>';
+			echo '<div class="wrap"><h2>Create New Ticket</h2></div><br /><a href="#" class="button-primary" onclick="javascript:document.ticketEdit.add.value=\'1\'; document.ticketEdit.submit();return false;">Add New Ticket</a>';
 		}
 		echo "</div>";
 		echo '</form>';
@@ -1339,7 +1339,7 @@ echo '</div>';
 		}
 		else
 		{
-			echo '<div class="wrap"><h2>Create New Package</h2></div><br /><a href="#" class="button" onclick="javascript:document.packageEdit.add.value=\'1\'; document.packageEdit.submit();return false;">Add New Package</a>';
+			echo '<div class="wrap"><h2>Create New Package</h2></div><br /><a href="#" class="button-primary" onclick="javascript:document.packageEdit.add.value=\'1\'; document.packageEdit.submit();return false;">Add New Package</a>';
 		}
 
 		echo '</form>';
@@ -1478,7 +1478,7 @@ echo '</div>';
 		}
 		else
 		{
-			echo '<div class="wrap"><h2>Create New Coupon</h2></div><br /><a href="#" class="button" onclick="javascript:document.couponEdit.add.value=\'1\'; document.couponEdit.submit();return false;">Add New Coupon</a>';
+			echo '<div class="wrap"><h2>Create New Coupon</h2></div><br /><a href="#" class="button-primary" onclick="javascript:document.couponEdit.add.value=\'1\'; document.couponEdit.submit();return false;">Add New Coupon</a>';
 		}
 		echo '</form>';
 		echo '</div><div class="instructional">Coupons are codes you will create to give a discounted or free ticket to the event. Owe someone a favor or have them pay you by check? Just generate a coupon and welcome them to the event!</div>';
