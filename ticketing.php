@@ -719,7 +719,7 @@ echo '</div>';
 					else
 					{
 						echo '<tr>';
-						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
+						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
 						echo '</td>';
 						$tcsv = '';
 						foreach ($headerkey as $key)
