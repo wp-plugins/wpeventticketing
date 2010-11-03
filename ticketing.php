@@ -128,7 +128,7 @@ class eventTicketingSystem
 		{
 			echo '<div id="message" class="updated"><p>Message settings have been saved.</p></div>';
 		}
-		echo '<div class="settings_page"';
+		echo '<div class="settings_page">';
 		/*
 		 * PAYPAL SETTINGS
 		 */
