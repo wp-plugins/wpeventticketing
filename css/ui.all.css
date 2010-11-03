@@ -120,6 +120,11 @@ width: 50%;
 	float: left;
 }
 
+.settings_page h2 {
+
+min-width: 400px;
+}
+
 #attendeeGraph {
 width: 40%;
 padding-top: 52px;
@@ -150,4 +155,14 @@ border: 1px dashed #999;
 padding: 10px;
 background: #fff;
 
+}
+
+#expireStart, #expireEnd {
+
+display: block;
+}
+
+#event_control {
+
+width: 60%;
 }
