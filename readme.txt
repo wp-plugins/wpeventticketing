@@ -1,6 +1,6 @@
 === WP Event Ticketing ===
-Contributors: toddhuish, vegasgeek
-Tags: events, tickets.
+Contributors: toddhuish, vegasgeek, stastic
+Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.0
 Tested up to: 3.0.1
 Stable tag: 1.0
