@@ -1,0 +1,29 @@
+div.ticketingerror {
+	background-color: #ffebe8;
+	border-color:#c00;
+}
+
+#purchaseinfo {
+	vertical-align: top;
+}
+table {
+    border: 1px solid #e7e7e7;
+    text-align: left;
+    margin: 20px -1px 24px 0px;
+    width: 100%;
+}
+tr th,
+thead th {
+    color: #888;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 18px;
+    padding: 9px 24px;
+}
+tr td {
+    border-top: 1px solid #e7e7e7;
+    padding: 6px 24px;
+}
+tr.odd td {
+    background: #F2F7FC;
+}
