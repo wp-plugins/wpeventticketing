@@ -1,6 +1,6 @@
 === WP Event Ticketing ===
-Contributors: toddhuish, vegasgeek
-Tags: events, tickets.
+Contributors: toddhuish, vegasgeek, stastic
+Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.0
 Tested up to: 3.0.1
 Stable tag: 1.0
@@ -37,7 +37,7 @@ a discount to people who place their order during a certain time.
 6. Set your max attendance
 7. Enter your Paypal credentials
 8. Set up your email messaging
-3. Create a blank page and add the shortcode `[wpeventticketing]`
+9. Create a blank page and add the shortcode `[wpeventticketing]`
 
 == Frequently Asked Questions ==
 
