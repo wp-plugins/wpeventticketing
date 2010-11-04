@@ -1,4 +1,4 @@
-== Plugin Name ===
+=== WP Event Ticketing ===
 Contributors: toddhuish, vegasgeek
 Tags: events, tickets.
 Requires at least: 2.0
