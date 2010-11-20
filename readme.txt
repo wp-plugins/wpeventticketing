@@ -37,7 +37,9 @@ a discount to people who place their order during a certain time.
 6. Set your max attendance
 7. Enter your Paypal credentials
 8. Set up your email messaging
-3. Create a blank page and add the shortcode `[wpeventticketing]`
+9. Create a blank page and add the shortcode `[wpeventticketing]`
+
+
 
 == Frequently Asked Questions ==
 
@@ -56,6 +58,9 @@ Not at this time.
 
 
 == Changelog ==
+
+= 1.1 =
+* Fix MS bug where defaults wouldn't load on new blog creation
 
 = 1.0 =
 * Initial release

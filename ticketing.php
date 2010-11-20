@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.0
+Version: 1.1
 Author URI: http://9seeds.com/
 */
 
@@ -14,16 +14,29 @@ add_action('wp_print_styles', array("eventTicketingSystem", "frontendscripts"));
 add_action('admin_menu', array("eventTicketingSystem", "options"));
 add_shortcode('wpeventticketing', array("eventTicketingSystem", 'shortcode'));
 add_action('template_redirect', array("eventTicketingSystem", "paypal"));
+add_action('wpmu_new_blog',array("eventTicketingSystem","activate"),1);
 
 class eventTicketingSystem
 {
-	function activate()
+	function activate($blog_id = NULL)
 	{
+		//If in an MS context and there's a new blog created switch to it before loading defaults
+		if(is_numeric($blog_id))
+		{
+			switch_to_blog($blog_id);
+		}
+		
 		//Set up default options
 		if (!get_option("eventTicketingSystem"))
 		{
 			$data = unserialize(file_get_contents(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/defaults.ser'));
 			add_option("eventTicketingSystem", $data);
+		}
+		
+		//If in an MS context and there's a new blog created switch back to current blog after defaults are loaded
+		if(is_numeric($blog_id))
+		{
+			restore_current_blog();
 		}
 	}
 
