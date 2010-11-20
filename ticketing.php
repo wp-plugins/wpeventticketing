@@ -1525,6 +1525,8 @@ echo '</div>';
 			return(ob_get_clean());
 		}
 
+		echo '<div id="eventTicketing">'; // wrap all output in this div for styling
+
 		//return redirect from paypal
 		//token=EC-4DR89227KU882313S&PayerID=5SYRSDFCC4Z56
 		if ((isset($_REQUEST["token"]) && isset($_REQUEST["PayerID"]) && strlen($_REQUEST["token"]) == 20 && strlen($_REQUEST["PayerID"]) == 13) || (isset($_REQUEST["couponSubmitNonce"]) && wp_verify_nonce($_REQUEST['couponSubmitNonce'], plugin_basename(__FILE__))))
@@ -1568,7 +1570,7 @@ echo '</div>';
 				$order = get_option("coupon_" . $_REQUEST["couponSubmitNonce"]);
 				if(!$order)
 				{
-					echo '<div class="ticketingerror">That coupon has already been used</div>';
+					echo '<div class="ticketingerror">That coupon has already been used</div></div>';
 					return(false);
 				}
 				//remove option so it can't be used again
@@ -1700,7 +1702,7 @@ echo '</div>';
 			echo '<form action="" method="post">';
 			echo '<input type="hidden" name="packagePurchaseNonce" id="packagePurchaseNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
 			echo '<div>Please enter a name and email address for your confirmation and tickets</div>';
-			echo '<div>Name: <input name="packagePurchaseName" size="25" value="' . $_REQUEST["packagePurchaseName"] . '"> Email: <input name="packagePurchaseEmail" size="25" value="' . $_REQUEST["packagePurchaseEmail"] . '"></div>';
+			echo '<ul class="ticketPurchaseInfo"><li><label for="packagePurchaseName">Name:</label><input name="packagePurchaseName" size="35" value="' . $_REQUEST["packagePurchaseName"] . '"></li><li><label for="packagePurchaseEmail">Email:</label><input name="packagePurchaseEmail" size="35" value="' . $_REQUEST["packagePurchaseEmail"] . '"></li></ul>';
 			echo '<div id="packages">';
 			echo '<table>';
 			echo '<tr>';
@@ -1708,7 +1710,7 @@ echo '</div>';
 			echo '<th>Price</th>';
 			if ($o["displayPackageQuantity"])
 			{
-				echo '<th>Quantity Remaining</th>';
+				echo '<th>Remaining</th>';
 			}
 			echo '<th>Quantity</th>';
 			echo '</tr>';
@@ -1748,10 +1750,11 @@ echo '</div>';
 					echo '</tr>';
 				}
 			}
-			echo '<tr><td>Coupon Code: <input class="input" name="couponCode"></td><td><input type="submit" name="couponSubmitButton" value="Apply Coupon"></td><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "2" : "1") . '">&nbsp;</td></tr>';
-			echo '<tr><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "4" : "3") . '"><input type="image" src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"><div id="purchaseinfo" >Choose your tickets and pay for them at PayPal. You will fill in your ticket information after your purchase is completed</div></td></tr>';
+			echo '<tr class="coupon"><td colspan="2"><label for="couponCode">Coupon Code:</label><input class="input" name="couponCode"></td><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "2" : "1") . '"><input type="submit" name="couponSubmitButton" value="Apply Coupon"></td></tr>';
+			echo '<tr class="paypalbutton"><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "4" : "3") . '"><input type="image" src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"><div class="purchaseInstructions" >Choose your tickets and pay for them at PayPal. You will fill in your ticket information after your purchase is completed.</div></td></tr>';
 			echo '</table>';
-			echo '</div>';
+			echo '</div>'; // id="packages"
+			echo '</div>'; // class="eventTicketing"
 			echo '</form>';
 		}
 		return (ob_get_clean());
