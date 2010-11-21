@@ -151,7 +151,8 @@ class eventTicketingSystem
 				"paypalAPIUser" => trim($_REQUEST["paypalAPIUser"]),
 				"paypalAPIPwd" => trim($_REQUEST["paypalAPIPwd"]),
 				"paypalAPISig" => trim($_REQUEST["paypalAPISig"]),
-				"paypalEnv" => trim($_REQUEST["paypalEnv"])
+				"paypalEnv" => trim($_REQUEST["paypalEnv"]),
+				"paypalCurrency" => $_REQUEST["paypalCurrency"]
 			);
 			update_option("eventTicketingSystem", $o);
 			//echo '<div id="message" class="updated"><p>Paypal settings have been saved.</p></div>';
@@ -181,6 +182,36 @@ class eventTicketingSystem
 				<th scope="row"><label for="paypalAPISig">API Signature: </label></th>
 				<td><input id="paypalAPISig" type="text" maxlength="110" size="75" name="paypalAPISig" value="' . $o["paypalInfo"]["paypalAPISig"] . '" /></td>
 				
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="paypalCurrency">Currency: </label></th>
+				<td>
+					<select id="paypalCurrency" name="paypalCurrency">
+						<option value="AUD" '.($o["paypalInfo"]["paypalCurrency"] == "AUD" ? "selected" : "").'>Australian Dollars (A $)</option>
+						<option value="CAD" '.($o["paypalInfo"]["paypalCurrency"] == "CAD" ? "selected" : "").'>Canadian Dollars (C $)</option>
+						<option value="EUR" '.($o["paypalInfo"]["paypalCurrency"] == "EUR" ? "selected" : "").'>Euros (€)</option>
+						<option value="GBP" '.($o["paypalInfo"]["paypalCurrency"] == "GBP" ? "selected" : "").'>Pounds Sterling (£)</option>
+						<option value="JYP" '.($o["paypalInfo"]["paypalCurrency"] == "JYP" ? "selected" : "").'>Yen (¥)</option>
+						<option value="USD" '.($o["paypalInfo"]["paypalCurrency"] == "USD" || !strlen($o["paypalInfo"]["paypalCurrency"]) ? "selected" : "").'>U.S. Dollars ($)</option>
+						<option value="NZD" '.($o["paypalInfo"]["paypalCurrency"] == "NZD" ? "selected" : "").'>New Zealand Dollar ($)</option>
+						<option value="CHF" '.($o["paypalInfo"]["paypalCurrency"] == "CHF" ? "selected" : "").'>Swiss Franc</option>
+						<option value="HKD" '.($o["paypalInfo"]["paypalCurrency"] == "HKD" ? "selected" : "").'>Hong Kong Dollar ($)</option>
+						<option value="SGD" '.($o["paypalInfo"]["paypalCurrency"] == "SGD" ? "selected" : "").'>Singapore Dollar ($)</option>
+						<option value="SEK" '.($o["paypalInfo"]["paypalCurrency"] == "SEK" ? "selected" : "").'>Swedish Krona</option>
+						<option value="DKK" '.($o["paypalInfo"]["paypalCurrency"] == "DKK" ? "selected" : "").'>Danish Krone</option>
+						<option value="PLN" '.($o["paypalInfo"]["paypalCurrency"] == "PLN" ? "selected" : "").'>Polish Zloty</option>
+						<option value="NOK" '.($o["paypalInfo"]["paypalCurrency"] == "NOK" ? "selected" : "").'>Norwegian Krone</option>
+						<option value="HUF" '.($o["paypalInfo"]["paypalCurrency"] == "HUF" ? "selected" : "").'>Hungarian Forint</option>
+						<option value="CZK" '.($o["paypalInfo"]["paypalCurrency"] == "CZK" ? "selected" : "").'>Czech Koruna</option>
+						<option value="ILS" '.($o["paypalInfo"]["paypalCurrency"] == "ILS" ? "selected" : "").'>Israeli Shekel</option>
+						<option value="MXN" '.($o["paypalInfo"]["paypalCurrency"] == "MXN" ? "selected" : "").'>Mexican Peso</option>
+						<option value="BRL" '.($o["paypalInfo"]["paypalCurrency"] == "BRL" ? "selected" : "").'>Brazilian Real (only for Brazilian users)</option>
+						<option value="MYR" '.($o["paypalInfo"]["paypalCurrency"] == "MYR" ? "selected" : "").'>Malaysian Ringgits (only for Malaysian users)</option>
+						<option value="PHP" '.($o["paypalInfo"]["paypalCurrency"] == "PHP" ? "selected" : "").'>Philippine Pesos</option>
+						<option value="TWD" '.($o["paypalInfo"]["paypalCurrency"] == "TWD" ? "selected" : "").'>Taiwan New Dollars</option>
+						<option value="THB" '.($o["paypalInfo"]["paypalCurrency"] == "THB" ? "selected" : "").'>Thai Baht</option>
+					</select>
+				</td>
 			</tr>
 			<tr valign="top">
 				
@@ -533,7 +564,7 @@ echo '</div>';
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
-			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for $'.number_format($order["price"],2)."\r\n\r\n", $headers);
+			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").''.number_format($order["price"],2)."\r\n\r\n", $headers);
 		}		
 
 		return(array("packageHash"=>$packageHash,"ticketHash"=>$tickethashes));
@@ -1562,7 +1593,7 @@ echo '</div>';
 							'TOKEN' => $_REQUEST["token"],
 							"PAYERID" => $_REQUEST["PayerID"],
 							"PAYMENTREQUEST_0_PAYMENTACTION" => 'Sale',
-							"PAYMENTREQUEST_0_CURRENCYCODE" => 'USD',
+							"PAYMENTREQUEST_0_CURRENCYCODE" => $p["paypalCurrency"],
 				);
 				foreach ($item as $k => $i)
 				{
@@ -1684,7 +1715,7 @@ echo '</div>';
 				$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 				$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 				wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
-				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for $'.number_format($order["price"],2)."\r\n\r\n", $headers);
+				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").''.number_format($order["price"],2)."\r\n\r\n", $headers);
 			}
 			else
 			{
@@ -1749,7 +1780,7 @@ echo '</div>';
 				{
 					echo '<tr>';
 					echo '<td><div class="packagename"><strong>' . $v->packageName . '</strong></div><div class="packagedescription">' . $v->packageDescription . '</div></td>';
-					echo '<td>$' . number_format($v->price, "2") . '</td>';
+					echo '<td>'.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").'' . number_format($v->price, "2") . '</td>';
 					if ($o["displayPackageQuantity"])
 					{
 						echo '<td>' . $packageRemaining . ' left</td>';
@@ -1940,7 +1971,7 @@ echo '</div>';
 					             "RETURNURL" => $returnsite,
 					             "CANCELURL" => $returnsite,
 					             "PAYMENTREQUEST_0_PAYMENTACTION" => 'Sale',
-					             "PAYMENTREQUEST_0_CURRENCYCODE" => 'USD',
+			 			         "PAYMENTREQUEST_0_CURRENCYCODE" => $p["paypalCurrency"],
 					);
 					foreach ($item as $k => $i)
 					{
