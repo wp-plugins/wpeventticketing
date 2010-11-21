@@ -141,6 +141,17 @@ class eventTicketingSystem
 		{
 			echo '<div id="message" class="updated"><p>Settings have been saved.</p></div>';
 		}
+		
+		if($_REQUEST['eventStatusSwitch'] == 1)
+		{
+			echo '<div id="message" class="updated"><p>Ticketing has been turned <strong>'.($o['eventTicketingStatus'] == 1 ? 'OFF' : 'ON').'</strong></p></div>';
+		}
+
+		if($_REQUEST["eventReset"] == 1)
+		{
+			echo '<div id="message" class="updated"><p>Ticketing has been reset</p></div>';
+		}
+
 		echo '<div class="settings_page">';
 		/*
 		 * PAYPAL SETTINGS
