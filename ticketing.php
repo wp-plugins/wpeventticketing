@@ -1139,7 +1139,7 @@ echo '</div>';
 
 	function ticketTicketsControl()
 	{
-		//echo "<pre>";print_r($_REQUEST); echo "</pre>";
+		echo "<pre>";print_r($_REQUEST); echo "</pre>";
 		$o = get_option("eventTicketingSystem");
 
 		if (wp_verify_nonce($_POST['ticketOptionAddToTicketNonce'], plugin_basename(__FILE__)))
@@ -1165,23 +1165,31 @@ echo '</div>';
 		{
 			if ($_REQUEST["add"] == 1)
 			{
-				if (is_array($o["ticketProtos"]) && !empty($o["ticketProtos"]))
+				if(!strlen($_REQUEST["ticketDisplayName"]))
 				{
-					$nextId = ((int) max(array_keys($o["ticketProtos"]))) + 1;
+					echo '<div id="message" class="error"><p>Ticket name cannot be blank</p></div>';
 				}
 				else
 				{
-					$nextId = 0;
-				}
+					if (is_array($o["ticketProtos"]) && !empty($o["ticketProtos"]))
+					{
+						$nextId = ((int) max(array_keys($o["ticketProtos"]))) + 1;
+					}
+					else
+					{
+						$nextId = 0;
+					}
 
-				$o["ticketProtos"][$nextId] = new ticket();
-				$o["ticketProtos"][$nextId]->setTicketId($nextId);
+					$o["ticketProtos"][$nextId] = new ticket();
+					$o["ticketProtos"][$nextId]->setTicketId($nextId);
+					$o["ticketProtos"][$nextId]->setDisplayName($_REQUEST["ticketDisplayName"]);
 
-				update_option("eventTicketingSystem", $o);
+					update_option("eventTicketingSystem", $o);
 
-				$ticketProto = $o["ticketProtos"][$nextId];
-				
-				echo '<div id="message" class="updated"><p>Ticket added</p></div>';
+					$ticketProto = $o["ticketProtos"][$nextId];
+					
+					echo '<div id="message" class="updated"><p>Ticket added</p></div>';
+				}	
 			}
 			elseif (is_numeric($_REQUEST["del"]))
 			{
@@ -1274,7 +1282,9 @@ echo '</div>';
 		}
 		else
 		{
-			echo '<div class="wrap"><h2>Create New Ticket</h2></div><br /><a href="#" class="button-primary" onclick="javascript:document.ticketEdit.add.value=\'1\'; document.ticketEdit.submit();return false;">Add New Ticket</a>';
+			echo '<div class="wrap"><h2>Create New Ticket</h2></div>';
+			echo 'Ticket Name: <input type="text" name="ticketDisplayName" value="">';
+			echo '<br /><br /><a href="#" class="button-primary" onclick="javascript:document.ticketEdit.add.value=\'1\'; document.ticketEdit.submit();return false;">Add New Ticket</a>';
 		}
 		echo "</div>";
 		echo '</form>';
@@ -1457,6 +1467,13 @@ echo '</div>';
 				{
 					if (is_numeric($v["packageId"]) && strlen($v["couponCode"]) && is_numeric($v["couponAmount"]))
 					{
+						//this happens when a coupon is edited and the coupon code is changed
+						//this way we don't have a new coupon added when a code is changed
+						if(isset($_REQUEST["update"]) && isset($o["coupons"][$_REQUEST["update"]]) && $_REQUEST["update"] != $v["couponCode"])
+						{
+							unset($o["coupons"][$_REQUEST["update"]]);
+						}
+
 						$o["coupons"][$v["couponCode"]] = array("couponCode" => $v["couponCode"], "packageId" => $v["packageId"], "uses" => $v["couponUses"], "type"=>$v["couponType"], "amt"=>$v["couponAmount"], "used"=>$v["couponUsed"]);
 						$saved++;
 					}
@@ -1526,6 +1543,10 @@ echo '</div>';
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="edit" value="" />
 		<input type="hidden" name="del" value="" />';
+		if(isset($_REQUEST["edit"]) && strlen($_REQUEST["edit"]))
+		{
+			echo '<input type="hidden" name="update" value="'.$_REQUEST["edit"].'" />';
+		}
 		if (isset($coupon))
 		{
 			if (strlen($coupon[0]["couponCode"]))
