@@ -1021,6 +1021,7 @@ echo '</div>';
 				unset($o["ticketOptions"][$_REQUEST["del"]]);
 				update_option("eventTicketingSystem", $o);
 				$ticketOption = new ticketOption();
+				echo '<div id="message" class="updated"><p>Option deleted</p></div>';
 			}
 			else
 			{
@@ -1040,6 +1041,7 @@ echo '</div>';
 				$o["ticketOptions"][$nextId] = new ticketOption($_REQUEST["ticketOptionDisplay"], $_REQUEST["ticketOptionDisplayType"], $_REQUEST["ticketOptionDrop"]);
 				$o["ticketOptions"][$nextId]->setOptionId($nextId);
 				update_option("eventTicketingSystem", $o);
+				echo '<div id="message" class="updated"><p>Option saved</p></div>';
 
 				$ticketOption = new ticketOption();
 			}
@@ -1178,11 +1180,14 @@ echo '</div>';
 				update_option("eventTicketingSystem", $o);
 
 				$ticketProto = $o["ticketProtos"][$nextId];
+				
+				echo '<div id="message" class="updated"><p>Ticket added</p></div>';
 			}
 			elseif (is_numeric($_REQUEST["del"]))
 			{
 				unset($o["ticketProtos"][$_REQUEST["del"]]);
 				update_option("eventTicketingSystem", $o);
+				echo '<div id="message" class="updated"><p>Ticket deleted</p></div>';
 			}
 			elseif (is_numeric($_REQUEST["edit"]))
 			{
@@ -1192,6 +1197,7 @@ echo '</div>';
 			{
 				$o["ticketProtos"][$_REQUEST["update"]]->setDisplayName($_REQUEST["ticketDisplayName"]);
 				update_option("eventTicketingSystem", $o);
+				echo '<div id="message" class="updated"><p>Ticket updated</p></div>';
 			}
 		}
 
@@ -1293,6 +1299,7 @@ echo '</div>';
 				{
 					$o["packageProtos"][$_REQUEST["packageId"]]->delTicket($_REQUEST["del"]);
 					update_option("eventTicketingSystem", $o);
+					echo '<div id="message" class="updated"><p>Package updated</p></div>';
 				}
 
 				$packageProto = $o["packageProtos"][$_REQUEST["packageId"]];
@@ -1315,6 +1322,7 @@ echo '</div>';
 				$o["packageProtos"][$nextId] = new package();
 				$o["packageProtos"][$nextId]->setPackageId($nextId);
 				update_option("eventTicketingSystem", $o);
+				echo '<div id="message" class="updated"><p>New package has been added</p></div>';
 
 				$packageProto = $o["packageProtos"][$nextId];
 			}
@@ -1322,6 +1330,7 @@ echo '</div>';
 			{
 				unset($o["packageProtos"][$_REQUEST["del"]]);
 				update_option("eventTicketingSystem", $o);
+				echo '<div id="message" class="updated"><p>Package deleted</p></div>';
 			}
 			elseif (is_numeric($_REQUEST["edit"]))
 			{
@@ -1338,6 +1347,7 @@ echo '</div>';
 				$o["packageProtos"][$_REQUEST["update"]]->setPackageDescription($_REQUEST["packageDescription"]);
 
 				update_option("eventTicketingSystem", $o);
+				echo '<div id="message" class="updated"><p>Package updated</p></div>';
 			}
 		}
 		echo "<div id='ticket_wrapper_2'>";
@@ -1399,7 +1409,7 @@ echo '</div>';
 				{
 					echo "<tr>";
 					echo '<td>' . $v->displayName() . '</td>';
-					echo '<td><a href="#" onclick="javascript:document.ticketAddToPackage.add.value=\'' . $v->ticketId . '\'; document.ticketAddToPackage.submit();return false;">Add Ticket To Package</a></td>';
+					echo '<td><a href="#" onclick="javascript:document.ticketAddToPackage.add.value=\'' . $v->ticketId . '\'; document.ticketAddToPackage.submit();return false;">Add Ticket To Package and set options</a></td>';
 				}
 
 				echo "</tr>";
