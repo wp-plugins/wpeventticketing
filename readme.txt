@@ -64,10 +64,12 @@ Not at this time.
 * Allow selection of currency type
 * Added more notifications to UI as things are added/edited/deleted
 * Editing a coupon code doesn't create a new coupon and leave the old one there as well
-* Edits for extra styling on purchase form (thanks Ryan!)
+* Edits for extra styling on purchase form (thanks @RyanKelln)
 * Cleanup of new ticket creation
-* Add i18n capabilities to plugin
 * Add multi select type to ticket options
+* Pre populate ticket with name/email entered in at time of ticket purchase
+* Fix bug if no coupon use quantity entered
+* Add explicit on/off switch for packages to display or not
 
 = 1.0 =
 * Initial release

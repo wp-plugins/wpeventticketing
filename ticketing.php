@@ -86,49 +86,48 @@ class eventTicketingSystem
 		echo '<h3>'.__('Step 1').'</h3>';
 		echo '<p>'.__('Before you can use the ticketing system for the first time, you need to <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO" target="_blank">follow these instructions at Paypal</a> to get your API signature. You\'ll need that information in step 2.').'</p>';
 			
-		echo '<h3>Step 2</h3>
-			<p>Update the <a href="admin.php?page=ticketsettings">Settings</a> page with your default event settings.</p>
+		echo '<h3>'.__('Step 2').'</h3>';
+		echo '<p>'.__('Update the <a href="admin.php?page=ticketsettings">Settings</a> page with your default event settings.').'</p>';
 
-			<h3>Step 3</h3>
-			<p>The <a href="admin.php?page=ticketoptions">Ticket Options</a> page is where you can set up what types of data you want to collect from your event attendees. Note, not all options have to be used for each ticket type. More on that shortly.</p>
+		echo '<h3>'.__('Step 3').'</h3>';
+		echo '<p>'.__('The <a href="admin.php?page=ticketoptions">Ticket Options</a> page is where you can set up what types of data you want to collect from your event attendees. Note, not all options have to be used for each ticket type. More on that shortly.').'</p>';
 
-			<h3>Step 4</h3>
-			<p>The <a href="admin.php?page=tickettickets">Tickets</a> page is where you\'ll set up the types of tickes you want to offer. For example, you can set up ticket type "A" to include a shirt and lunch and type "B" which includes just the basics. As you are creating your ticket, you select the ticket options you want included for each ticket type.</p>
+		echo '<h3>'.__('Step 4').'</h3>';
+		echo '<p>'.__('The <a href="admin.php?page=tickettickets">Tickets</a> page is where you\'ll set up the types of tickes you want to offer. For example, you can set up ticket type "A" to include a shirt and lunch and type "B" which includes just the basics. As you are creating your ticket, you select the ticket options you want included for each ticket type.').'</p>';
 
-			<h3>Step 5</h3>
-			<p>The <a href="admin.php?page=ticketpackages">Packages</a> page is used to create the items that will be listed for sale on your site. For example, if you created ticket types "A" and "B" in the previous step, you could now create a package called "General Admission" and select ticket type "A" to be included. Then create a second package called "Cheapy Ticket" and attach ticket type "B". Another good use of a ticket package would be for offering event sponsorships. For example, create a package called "Gold Sponsor" with a price tag of $1,000 and includes multiple general admission tickets.</p>
+		echo '<h3>'.__('Step 5').'</h3>';
+		echo '<p>'.__('The <a href="admin.php?page=ticketpackages">Packages</a> page is used to create the items that will be listed for sale on your site. For example, if you created ticket types "A" and "B" in the previous step, you could now create a package called "General Admission" and select ticket type "A" to be included. Then create a second package called "Cheapy Ticket" and attach ticket type "B". Another good use of a ticket package would be for offering event sponsorships. For example, create a package called "Gold Sponsor" with a price tag of $1,000 and includes multiple general admission tickets.').'</p>';
 
-			<h3>Step 6</h3>
-			<p>Create a new <a href="post-new.php?post_type=page">Page</a> and add the following shortcode: <strong>[wpeventticketing]</strong>. This will display the ticket packages available for your event.</p>
+		echo '<h3>'.__('Step 6').'</h3>';
+		echo '<p>'.__('Create a new <a href="post-new.php?post_type=page">Page</a> and add the following shortcode: <strong>[wpeventticketing]</strong>. This will display the ticket packages available for your event.').'</p>';
 
-			<p><hr></p>
+		echo '<p><hr></p>';
 
-			<h2>Extras</h2>
-			<h3>Reporting</h3>
-			<p>The <a href="admin.php?page=eventticketing">Reporting</a> page gives you a snap shot of the pacakges and ticket types sold, coupons used and a graph displaying the numebr of tickes used and still available. The Summary Report makes it easy to get a count of your attendees based on the data provided. Very handy for getting a count of how many t-shirts you need to order in each size.</p>
+		echo '<h2>'.__('Extras').'</h2>';
+		echo '<h3>'.__('Reporting').'</h3>';
+		echo '<p>'.__('The <a href="admin.php?page=eventticketing">Reporting</a> page gives you a snap shot of the pacakges and ticket types sold, coupons used and a graph displaying the numebr of tickes used and still available. The Summary Report makes it easy to get a count of your attendees based on the data provided. Very handy for getting a count of how many t-shirts you need to order in each size.').'</p>';
 
-			<h3>Create Coupons</h3>
-			<p>On the <a href="admin.php?page=ticketcoupons">Coupons</a> page you can create an easy way to give discounts on tickets. Create a ticket code, set a flat-rate or percentage discount and select the number of times it can be used. This is handy for giving your speakers free entry to the event, but having them register so they are included in the attendee list and receive email notifications you might send.</p>
+		echo '<h3>'.__('Create Coupons').'</h3>';
+		echo '<p>'.__('On the <a href="admin.php?page=ticketcoupons">Coupons</a> page you can create an easy way to give discounts on tickets. Create a ticket code, set a flat-rate or percentage discount and select the number of times it can be used. This is handy for giving your speakers free entry to the event, but having them register so they are included in the attendee list and receive email notifications you might send.').'</p>';
 
-			<h3>Send Emails to Attendees</h3>
-			<p>The <a href="admin.php?page=ticketnotify">Notify Attendees</a> page will let you send an email to everybody on the Attendee list. A copy of the email gets sent to the admin automatically. A history of the messages sent is stored and displayed at the bottom of the page.</p>
+		echo '<h3>'.__('Send Emails to Attendees').'</h3>';
+		echo '<p>'.__('The <a href="admin.php?page=ticketnotify">Notify Attendees</a> page will let you send an email to everybody on the Attendee list. A copy of the email gets sent to the admin automatically. A history of the messages sent is stored and displayed at the bottom of the page.').'</p>';
 
-			<h3>Create Tickets Manually</h3>
-			<p>You may find it necessary to create a ticket for somebody manually. Use the form on the <a href="admin.php?page=ticketattendeeedit">Attendees</a> page to create a ticket, as an example, for somebody who may have paid cash.</p>
+		echo '<h3>'.__('Create Tickets Manually').'</h3>';
+		echo '<p>'.__('You may find it necessary to create a ticket for somebody manually. Use the form on the <a href="admin.php?page=ticketattendeeedit">Attendees</a> page to create a ticket, as an example, for somebody who may have paid cash.').'</p>';
 
-			<h3>Export Attendee List</h3>
-			<p>Also on the Attendee page you have the option to export a list of all the attendees. This creates a CSV of all attendees and the data they\'ve provided.</p>
+		echo '<h3>'.__('Export Attendee List').'</h3>';
+		echo '<p>'.__('Also on the Attendee page you have the option to export a list of all the attendees. This creates a CSV of all attendees and the data they\'ve provided.').'</p>';
 
-			<p><hr></p>
-			<h3>Looking for more features?</h3>
-			<p>We are currently hard at work on <strong>Event Ticketing Pro</strong>. Sign up for our <a href="http://eepurl.com/brgsD" target="_blank">newsletter</a> to be notified when the pro version is released.</p>
+		echo '<p><hr></p>';
+		echo '<h3>'.__('Looking for more features?').'</h3>';
+		echo '<p>'.__('We are currently hard at work on <strong>Event Ticketing Pro</strong>. Sign up for our <a href="http://eepurl.com/brgsD" target="_blank">newsletter</a> to be notified when the pro version is released.').'</p>';
 
-			<p>We hope you like the plugin. If you have any questions, feel free to <a href="http://9seeds.com/contact/" target="_blank">contact us</a>.</p>
+		echo '<p>'.__('We hope you like the plugin. If you have any questions, feel free to <a href="http://9seeds.com/contact/" target="_blank">contact us</a>.').'</p>';
 
 
-			</div>
-			</div>
-		';
+		echo '</div>
+			</div>';
 	}
 
 	function ticketSettings()
@@ -547,6 +546,24 @@ echo '</div>';
 			$ticket = clone $o["ticketProtos"][$t->ticketId];
 			$ticket->setTicketid($ticketHash);
 			$ticket->setSoldTime(time());
+
+			//echo '<pre>'.print_r($ticket,true).'</pre>';
+			foreach($ticket->ticketOptions as $tk => $tv)
+			{
+				if($tv->displayName == 'Email')
+				{
+					$ticket->ticketOptions[$tk]->value = $emailTo;
+				}
+				if($tv->displayName == 'First Name')
+				{
+					$ticket->ticketOptions[$tk]->value = '';
+				}
+				if($tv->displayName == 'Last Name')
+				{
+					$ticket->ticketOptions[$tk]->value = '';
+				}
+			}
+
 			$package->addTicket($ticket);
 			add_option("ticket_" . $ticketHash, $packageHash);
 			$o["packageQuantities"]["totalTicketsSold"]++;
@@ -1585,7 +1602,7 @@ echo '</div>';
 				echo '</select></td>';
 				echo '<td><select name="coupon['.$ck.'][couponType]"><option value="flat" '.($cv["type"] == "flat" ? "selected" : "").'>Flat Rate</option><option value="percent" '.($cv["type"] == "percent" ? "selected" : "").'>Percentage</option></select></td>';
 				echo '<td><input name="coupon['.$ck.'][couponAmount]" value="'.$cv["amt"].'" size="5"></td>';
-				echo '<td><input name="coupon['.$ck.'][couponUses]" size="2" value="'.$cv["uses"].'"></td>';
+				echo '<td><input name="coupon['.$ck.'][couponUses]" size="2" value="'.($cv["uses"] ? $cv["uses"] : 1).'"></td>';
 				echo '<input type="hidden" name="coupon['.$ck.'][couponUsed]" value="'.(int)$cv["used"].'">';
 				echo '</tr>';
 			}
@@ -1726,6 +1743,25 @@ echo '</div>';
 							$ticket = clone $o["ticketProtos"][$t->ticketId];
 							$ticket->setTicketid($ticketHash);
 							$ticket->setSoldTime(time());
+
+							$n = explode(' ',$order["name"]);
+
+							foreach($ticket->ticketOptions as $tk => $tv)
+							{
+								if($tv->displayName == 'Email')
+								{
+									$ticket->ticketOptions[$tk]->value = $order["email"];
+								}
+								if($tv->displayName == 'First Name')
+								{
+									$ticket->ticketOptions[$tk]->value = $n[0];
+								}
+								if($tv->displayName == 'Last Name')
+								{
+									$ticket->ticketOptions[$tk]->value = $n[1];
+								}
+							}
+
 							$package->addTicket($ticket);
 							add_option("ticket_" . $ticketHash, $packageHash);
 							$o["packageQuantities"]["totalTicketsSold"]++;
@@ -1822,6 +1858,9 @@ echo '</div>';
 				}
 				else
 				{
+					if(!$v->ticketQuantity)
+						$v->ticketQuantity = 1;
+
 					$packageRemaining = floor($totalRemaining / $v->ticketQuantity);
 					$packageCounter = $packageRemaining > 10 ? 10 : $packageRemaining;
 				}
