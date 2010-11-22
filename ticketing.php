@@ -81,13 +81,12 @@ class eventTicketingSystem
 
 	function ticketInstructions()
 	{
-		echo '
-			<div class="wrap">
-			<div id="icon-options-general" class="icon32"></div><h2>Instructions</h2>
-			<h3>Step 1</h3>
-			<p>Before you can use the ticketing system for the first time, you need to <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO" target="_blank">follow these instructions at Paypal</a> to get your API signature. You\'ll need that information in step 2.</p>
+		echo '<div class="wrap">';
+		echo '<div id="icon-options-general" class="icon32"></div><h2>'.__('Instructions').'</h2>';
+		echo '<h3>'.__('Step 1').'</h3>';
+		echo '<p>'.__('Before you can use the ticketing system for the first time, you need to <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO" target="_blank">follow these instructions at Paypal</a> to get your API signature. You\'ll need that information in step 2.').'</p>';
 			
-			<h3>Step 2</h3>
+		echo '<h3>Step 2</h3>
 			<p>Update the <a href="admin.php?page=ticketsettings">Settings</a> page with your default event settings.</p>
 
 			<h3>Step 3</h3>
@@ -779,8 +778,16 @@ echo '</div>';
 						$tcsv = '';
 						foreach ($headerkey as $key)
 						{
-							echo '<td>' . (strlen($data[$key]) ? $data[$key] : "&nbsp;") . '</td>';
-							$tcsv .= '"'.$data[$key].'",';
+							if(is_array($data[$key]))
+							{
+								echo '<td>'.implode($data[$key],',').'</td>';
+								$tcsv .= '"'.implode($data[$key],',').'",';
+							}
+							else
+							{	
+								echo '<td>' . (strlen($data[$key]) ? $data[$key] : "&nbsp;") . '</td>';
+								$tcsv .= '"'.$data[$key].'",';
+							}
 						}
 						$csv .= substr($tcsv,0,-1)."\n";
 					}
@@ -1034,10 +1041,11 @@ echo '</div>';
 				{
 					$nextId = ((int) max(array_keys($o["ticketOptions"]))) + 1;
 				}
-				if ($_REQUEST["ticketOptionDisplayType"] != "dropdown")
+				if ($_REQUEST["ticketOptionDisplayType"] != "dropdown" && $_REQUEST["ticketOptionDisplayType"] != "multidropdown")
 				{
 					$_REQUEST["ticketOptionDrop"] = NULL;
 				}
+				
 				$o["ticketOptions"][$nextId] = new ticketOption($_REQUEST["ticketOptionDisplay"], $_REQUEST["ticketOptionDisplayType"], $_REQUEST["ticketOptionDrop"]);
 				$o["ticketOptions"][$nextId]->setOptionId($nextId);
 				update_option("eventTicketingSystem", $o);
@@ -1093,8 +1101,9 @@ echo '</div>';
 			</div>
 			<div id="inputTicketOptionDisplayType">
 				Option Type: <select name="ticketOptionDisplayType" id="ticketoptionselect">
-				<option ' . ($ticketOption->displayType == "text" ? "SELECTED" : "") . '>text</option>
-				<option ' . ($ticketOption->displayType == "dropdown" ? "SELECTED" : "") . '>dropdown</option>
+				<option value="text" ' . ($ticketOption->displayType == "text" ? "SELECTED" : "") . '>Text Input</option>
+				<option value="dropdown" ' . ($ticketOption->displayType == "dropdown" ? "SELECTED" : "") . '>Dropdown</option>
+				<option value="multidropdown" ' . ($ticketOption->displayType == "multidropdown" ? "SELECTED" : "") . '>Multi Select</option>
 				</select>
 			</div>';
 		echo '<div id="optionvalsdiv">';
@@ -1139,7 +1148,7 @@ echo '</div>';
 
 	function ticketTicketsControl()
 	{
-		echo "<pre>";print_r($_REQUEST); echo "</pre>";
+		//echo "<pre>";print_r($_REQUEST); echo "</pre>";
 		$o = get_option("eventTicketingSystem");
 
 		if (wp_verify_nonce($_POST['ticketOptionAddToTicketNonce'], plugin_basename(__FILE__)))
@@ -2129,6 +2138,14 @@ class ticketOption
 				foreach ($this->options as $o)
 				{
 					echo '<option ' . ($o == $this->value ? "selected" : "") . '>' . $o . '</option>';
+				}
+				echo '</select>';
+				break;
+			case "multidropdown":
+				echo '<select size=5 MULTIPLE class="ticket-option-multidropdown" id="multidropdown-' . $this->optionId . '" name="ticketOption[' . $this->optionId . '][]">';
+				foreach ($this->options as $o)
+				{
+					echo '<option ' . (in_array($o,$this->value) ? "selected" : "") . '>' . $o . '</option>';
 				}
 				echo '</select>';
 				break;

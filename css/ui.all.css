@@ -27,6 +27,10 @@ height: auto;
 
 }
 
+select.ticket-option-multidropdown{
+height: auto !important;
+}
+
 #inputTicketOptionDisplayType select{
 
 margin-left: 7px;

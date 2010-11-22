@@ -60,7 +60,14 @@ Not at this time.
 == Changelog ==
 
 = 1.1 =
-* Fix MS bug where defaults wouldn't load on new blog creation
+* Fix MS compatibility bug where defaults wouldn't load on new blog creation
+* Allow selection of currency type
+* Added more notifications to UI as things are added/edited/deleted
+* Editing a coupon code doesn't create a new coupon and leave the old one there as well
+* Edits for extra styling on purchase form (thanks Ryan!)
+* Cleanup of new ticket creation
+* Add i18n capabilities to plugin
+* Add multi select type to ticket options
 
 = 1.0 =
 * Initial release

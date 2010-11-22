@@ -23,6 +23,8 @@ jQuery(document).ready(function() {
 		var value = jQuery(this).val();
 		if(value == 'dropdown')
 			jQuery('#optionvalsdiv').show();
+		if(value == 'multidropdown')
+			jQuery('#optionvalsdiv').show();
 		if(value == 'text')
 			jQuery('#optionvalsdiv').hide();
 	});
@@ -30,6 +32,8 @@ jQuery(document).ready(function() {
 	jQuery(function() {
 		var value = jQuery("#ticketoptionselect").val();
 		if(value == 'dropdown')
+			jQuery('#optionvalsdiv').show();
+		if(value == 'multidropdown')
 			jQuery('#optionvalsdiv').show();
 		if(value == 'text')
 			jQuery('#optionvalsdiv').hide();
