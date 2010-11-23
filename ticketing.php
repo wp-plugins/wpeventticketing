@@ -1782,7 +1782,7 @@ echo '</div>';
 							$ticket->setTicketid($ticketHash);
 							$ticket->setSoldTime(time());
 
-							$n = explode(' ',$order["name"]);
+							$n = explode(' ',$order["name"],2);
 
 							foreach($ticket->ticketOptions as $tk => $tv)
 							{
@@ -1926,9 +1926,10 @@ echo '</div>';
 			echo '<tr class="paypalbutton"><td colspan="' . ($o["displayPackageQuantity"] == 1 ? "4" : "3") . '"><input type="image" src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"><div class="purchaseInstructions" >Choose your tickets and pay for them at PayPal. You will fill in your ticket information after your purchase is completed.</div></td></tr>';
 			echo '</table>';
 			echo '</div>'; // id="packages"
-			echo '</div>'; // class="eventTicketing"
 			echo '</form>';
 		}
+		
+		echo '</div>'; // class="eventTicketing"
 		return (ob_get_clean());
 	}
 
