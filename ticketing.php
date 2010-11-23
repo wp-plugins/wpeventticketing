@@ -784,8 +784,27 @@ echo '</div>';
 						echo '<td>'.$data["Sold Time"].'</td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
 						//echo '<pre>'.print_r($data,true).'</pre>';exit;
-						$tcsv = array($data["Sold Time"],$data["orderdetails"]["name"],$data["orderdetails"]["email"]);
-						$csv .= implode(',',$tcsv)."\n";
+						if(!strlen($data["Email"]))
+						{
+							$tcsv = array($data["Sold Time"],$data["orderdetails"]["name"],$data["orderdetails"]["email"]);
+							$csv .= implode(',',$tcsv)."\n";
+						}
+						else
+						{
+							$tcsv = '';
+							foreach ($headerkey as $key)
+							{
+								if(is_array($data[$key]))
+								{
+									$tcsv .= '"'.implode($data[$key],',').'",';
+								}
+								else
+								{	
+									$tcsv .= '"'.$data[$key].'",';
+								}
+							}
+							$csv .= substr($tcsv,0,-1)."\n";
+						}
 					}
 					else
 					{
@@ -1362,6 +1381,18 @@ echo '</div>';
 
 				$packageProto = $o["packageProtos"][$nextId];
 			}
+			elseif(is_numeric($_REQUEST["activate"]))
+			{
+				if($o["packageProtos"][$_REQUEST["activate"]]->active === false)
+				{
+					$o["packageProtos"][$_REQUEST["activate"]]->setActive(true);
+				}
+				else
+				{
+					$o["packageProtos"][$_REQUEST["activate"]]->setActive(false);
+				}	
+				update_option("eventTicketingSystem", $o);
+			}
 			elseif (is_numeric($_REQUEST["del"]))
 			{
 				unset($o["packageProtos"][$_REQUEST["del"]]);
@@ -1403,9 +1434,11 @@ echo '</div>';
 			echo "<tbody>";
 			foreach ($o["packageProtos"] as $k => $v)
 			{
-				echo "<tr>";
+				echo '<tr '.($v->active === false ? "style=\"background-color:LightPink;\"" : "").'>';
 				echo '<td>' . $v->displayName() . '</td>';
-				echo '<td><a href="#" onclick="javascript:document.packageEdit.edit.value=\'' . $v->packageId . '\'; document.packageEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.packageEdit.del.value=\'' . $v->packageId . '\';if (confirm(\'Are you sure you want to delete this package? THIS CANNOT BE UNDONE\')) document.packageEdit.submit();return false;">Delete</a></td>';
+				echo '<td><a href="#" onclick="javascript:document.packageEdit.edit.value=\'' . $v->packageId . '\'; document.packageEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.packageEdit.del.value=\'' . $v->packageId . '\';if (confirm(\'Are you sure you want to delete this package? THIS CANNOT BE UNDONE\')) document.packageEdit.submit();return false;">Delete</a>';
+				echo '&nbsp;|&nbsp;<a href="#" onclick="javascript:document.packageEdit.activate.value=\'' . $v->packageId . '\'; document.packageEdit.submit();return false;">'.($v->active === false ?  'Activate' : 'Deactivate').'</a>';
+				echo '</td>';
 			}
 
 			echo "</tr>";
@@ -1426,6 +1459,7 @@ echo '</div>';
 		<input type="hidden" name="update" value="' . $packageProto->packageId . '">
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="edit" value="" />
+		<input type="hidden" name="activate" value="" />
 		<input type="hidden" name="del" value="" />';
 		if (is_array($o["ticketProtos"]) && is_numeric($packageProto->packageId))
 		{
@@ -1621,6 +1655,7 @@ echo '</div>';
 
 	function shortcode()
 	{
+        //echo '<pre>'.print_r($_REQUEST,true).'</pre>';
 		$o = get_option("eventTicketingSystem");
 	
 		if(!isset($o["registrationPermalink"]) || (isset($o["registrationPermalink"]) && $o["registrationPermalink"] != get_permalink()))
@@ -1866,11 +1901,11 @@ echo '</div>';
 				}
 				//echo $v->packageId."::".$packageCounter."<br>";
 
-				if ($packageCounter > 0 && $v->validDates())
+				if ($packageCounter > 0 && $v->validDates() && $v->active !== false)
 				{
 					echo '<tr>';
 					echo '<td><div class="packagename"><strong>' . $v->packageName . '</strong></div><div class="packagedescription">' . $v->packageDescription . '</div></td>';
-					echo '<td>'.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").'' . number_format($v->price, "2") . '</td>';
+					echo '<td>'.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").'' . (is_numeric($v->price) ? number_format($v->price, "2") : '0.00') . '</td>';
 					if ($o["displayPackageQuantity"])
 					{
 						echo '<td>' . $packageRemaining . ' left</td>';
@@ -1956,6 +1991,7 @@ echo '</div>';
 		//check order and build for later retrieval
 		if (wp_verify_nonce($_POST['packagePurchaseNonce'], plugin_basename(__FILE__)))
 		{
+
 			if (!check_email_address($_REQUEST["packagePurchaseEmail"]))
 			{
 				$_SESSION["ticketingError"] = 'Please enter a name and email address';
@@ -2335,10 +2371,12 @@ class package
 	public $packageDescription;
 	public $orderDetails;
 	public $coupon;
+	public $active;
 
 	function __construct($tickets = array())
 	{
 		$this->tickets = $tickets;
+		$this->active = false;
 	}
 
 	public function displayForm()
@@ -2370,6 +2408,18 @@ class package
 		echo '<h2>Package Quantity</h2>';
 		echo '<div>Quantity: <input type="text" name="packageQuantity" value="' . $this->packageQuantity . '" size="3"><br /><p style="font-style: italic;">How many of this package to sell? Leave blank for no limit</p></div>';
 		echo '</div>';
+	}
+
+	public function setActive($active)
+	{
+		if($active)
+		{
+			$this->active = true;
+		}
+		else
+		{
+			$this->active = false;
+		}
 	}
 
 	public function setPackageId($id)
