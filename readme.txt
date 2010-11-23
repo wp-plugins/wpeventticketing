@@ -3,7 +3,7 @@ Contributors: toddhuish, vegasgeek, stastic
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.0
 Tested up to: 3.0.1
-Stable tag: 1.0
+Stable tag: 1.1
 
 Use WPEventTicketing to manage and sell ticket for an event from your WordPress website.
 
@@ -30,14 +30,15 @@ a discount to people who place their order during a certain time.
 == Installation ==
 
 1. Upload `wpeventticketing` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Set up your Ticket Options
-4. Create a new Ticket and select which ticket options to include
-5. Create a Ticket Package
-6. Set your max attendance
-7. Enter your Paypal credentials
-8. Set up your email messaging
-9. Create a blank page and add the shortcode `[wpeventticketing]`
+2. Activate the plugin through the 'Plugins' menu in your WordPress dashboard
+3. Get a Paypal API Signature (<a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">Instructions can be found here</a>)
+4. Set up your Ticket Options
+5. Create a new Ticket and select which ticket options to include
+6. Create a Ticket Package
+7. Set your max attendance
+8. Enter your Paypal credentials
+9. Set up your email messaging
+10. Create a blank page and add the shortcode `[wpeventticketing]`
 
 
 
@@ -45,7 +46,7 @@ a discount to people who place their order during a certain time.
 
 = Can I run multiple events at one time? =
 
-Not at this time. 
+Not at this time.
 
 == Screenshots ==
 
@@ -74,3 +75,8 @@ Not at this time.
 = 1.0 =
 * Initial release
 
+== Upgrade Notice ==
+
+= 1.1 =
+
+This upgrade adds a couple new features and fixes a few small issues. See changelog for detailed list.

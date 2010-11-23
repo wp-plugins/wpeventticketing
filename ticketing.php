@@ -260,7 +260,7 @@ class eventTicketingSystem
 		echo '<input type="hidden" name="ticketMessagesNonce" id="ticketMessagesNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
 			<table class="form-table">			
 			<tr valign="top">
-				<th scope="row"><label for="messageThankYou">Thank You Page:</label><br /><br ><em>Note: You must put the shorcode [ticketlinks] in this thank you page to have the links to the purchased tickets show up</em></th>
+				<th scope="row"><label for="messageThankYou">Thank You Page:</label><br /><br ><em>Note: You must put the shortcode [ticketlinks] in this thank you page to have the links to the purchased tickets show up</em></th>
 				<td><textarea id="messageThankYou" name="messageThankYou" rows="10" cols="80"/>' . $o["messages"]["messageThankYou"] . '</textarea></td>
 			</tr>
 			<tr valign="top">
@@ -292,7 +292,7 @@ class eventTicketingSystem
 				<td><input id="messageEmailSubj" type="text" name="messageEmailSubj" size="80" value="' . $o["messages"]["messageEmailSubj"] . '"></td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="messageEmailBody">Email Body:</label><br /><br ><em>Note: You must put the shorcode [ticketlinks] in this email body to have the links to the purchased tickets show up</em></th>
+				<th scope="row"><label for="messageEmailBody">Email Body:</label><br /><br ><em>Note: You must put the shortcode [ticketlinks] in this email body to have the links to the purchased tickets show up</em></th>
 				<td><textarea id="messageEmailBody" name="messageEmailBody" rows="10" cols="80"/>' . $o["messages"]["messageEmailBody"] . '</textarea></td>
 			</tr>
 			<tr valign="top">
