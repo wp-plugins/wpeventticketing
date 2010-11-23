@@ -101,6 +101,9 @@ class eventTicketingSystem
 		echo '<h3>'.__('Step 6').'</h3>';
 		echo '<p>'.__('Create a new <a href="post-new.php?post_type=page">Page</a> and add the following shortcode: <strong>[wpeventticketing]</strong>. This will display the ticket packages available for your event.').'</p>';
 
+		echo '<h3>'.__('Step 7').'</h3>';
+		echo '<p>'.__('On the <a href="admin.php?page=ticketsettings">Settings</a> page, click the Start Registration" button to open ticket sales.').'</p>';
+
 		echo '<p><hr></p>';
 
 		echo '<h2>'.__('Extras').'</h2>';
