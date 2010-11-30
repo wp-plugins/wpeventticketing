@@ -65,7 +65,7 @@ class eventTicketingSystem
 
 	function options()
 	{
-		add_menu_page('Tickets', 'Tickets', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png',29);
+		add_menu_page('Tickets', 'Tickets', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png');
 		add_submenu_page('eventticketing', 'Reporting', 'Reporting', 'activate_plugins', 'eventticketing', array('eventTicketingSystem', 'ticketReporting'));
 		add_submenu_page('eventticketing', 'Ticket Options', 'Ticket Options', 'activate_plugins', 'ticketoptions', array('eventTicketingSystem', 'ticketOptionsControl'));
 		add_submenu_page('eventticketing', 'Tickets', 'Tickets', 'activate_plugins', 'tickettickets', array('eventTicketingSystem', 'ticketTicketsControl'));
@@ -93,7 +93,7 @@ class eventTicketingSystem
 		echo '<p>'.__('The <a href="admin.php?page=ticketoptions">Ticket Options</a> page is where you can set up what types of data you want to collect from your event attendees. Note, not all options have to be used for each ticket type. More on that shortly.').'</p>';
 
 		echo '<h3>'.__('Step 4').'</h3>';
-		echo '<p>'.__('The <a href="admin.php?page=tickettickets">Tickets</a> page is where you\'ll set up the types of tickes you want to offer. For example, you can set up ticket type "A" to include a shirt and lunch and type "B" which includes just the basics. As you are creating your ticket, you select the ticket options you want included for each ticket type.').'</p>';
+		echo '<p>'.__('The <a href="admin.php?page=tickettickets">Tickets</a> page is where you\'ll set up the types of tickets you want to offer. For example, you can set up ticket type "A" to include a shirt and lunch and type "B" which includes just the basics. As you are creating your ticket, you select the ticket options you want included for each ticket type.').'</p>';
 
 		echo '<h3>'.__('Step 5').'</h3>';
 		echo '<p>'.__('The <a href="admin.php?page=ticketpackages">Packages</a> page is used to create the items that will be listed for sale on your site. For example, if you created ticket types "A" and "B" in the previous step, you could now create a package called "General Admission" and select ticket type "A" to be included. Then create a second package called "Cheapy Ticket" and attach ticket type "B". Another good use of a ticket package would be for offering event sponsorships. For example, create a package called "Gold Sponsor" with a price tag of $1,000 and includes multiple general admission tickets.').'</p>';
@@ -108,7 +108,7 @@ class eventTicketingSystem
 
 		echo '<h2>'.__('Extras').'</h2>';
 		echo '<h3>'.__('Reporting').'</h3>';
-		echo '<p>'.__('The <a href="admin.php?page=eventticketing">Reporting</a> page gives you a snap shot of the pacakges and ticket types sold, coupons used and a graph displaying the numebr of tickes used and still available. The Summary Report makes it easy to get a count of your attendees based on the data provided. Very handy for getting a count of how many t-shirts you need to order in each size.').'</p>';
+		echo '<p>'.__('The <a href="admin.php?page=eventticketing">Reporting</a> page gives you a snap shot of the pacakges and ticket types sold, coupons used and a graph displaying the numebr of tickets used and still available. The Summary Report makes it easy to get a count of your attendees based on the data provided. Very handy for getting a count of how many t-shirts you need to order in each size.').'</p>';
 
 		echo '<h3>'.__('Create Coupons').'</h3>';
 		echo '<p>'.__('On the <a href="admin.php?page=ticketcoupons">Coupons</a> page you can create an easy way to give discounts on tickets. Create a ticket code, set a flat-rate or percentage discount and select the number of times it can be used. This is handy for giving your speakers free entry to the event, but having them register so they are included in the attendee list and receive email notifications you might send.').'</p>';
