@@ -2011,6 +2011,11 @@ echo '</div>';
 						$_SESSION["ticketingError"] = 'That coupon has already been used the maximum number of times';
 						return(false);
 					}
+					if($o["packageProtos"][$coupon["packageId"]]->active === false)
+					{
+						$_SESSION["ticketingError"] = 'That coupon is for a package which is inactive';
+						return(false);
+					}
 
 					//echo "<pre>";print_r($coupon);exit;
 					$package = clone $o["packageProtos"][$coupon["packageId"]];
@@ -2080,8 +2085,7 @@ echo '</div>';
 					$couponSubmitNonce = wp_create_nonce(plugin_basename(__FILE__));
 					
 					add_option('coupon_' . $couponSubmitNonce, array("items" => $item, "email" => $_REQUEST["packagePurchaseEmail"], "name" => $_REQUEST["packagePurchaseName"]));
-					
-					header('Location: ' . get_permalink() . '?couponSubmitNonce=' . $couponSubmitNonce);
+					header('Location: ' . get_permalink() .(strstr(get_permalink(), '?') ? '&' : '?'). 'couponSubmitNonce=' . $couponSubmitNonce);
 					exit;
 				}
 				

@@ -1,8 +1,8 @@
 === WP Event Ticketing ===
 Contributors: toddhuish, vegasgeek, stastic
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
-Requires at least: 2.0
-Tested up to: 3.0.1
+Requires at least: 2.8
+Tested up to: 3.0.2
 Stable tag: 1.1.1
 
 Use WPEventTicketing to manage and sell ticket for an event from your WordPress website.
@@ -60,6 +60,11 @@ Not at this time.
 
 == Changelog ==
 
+= 1.1.2 =
+* Bugfix for coupons not working if permalink is default style (?page_id=<number>)
+* Spelling fixes
+* Bugfix where menu wouldn't show up if thesis was installed
+
 = 1.1.1 =
 * Bugfix for missing </div> in form
 
@@ -80,6 +85,6 @@ Not at this time.
 
 == Upgrade Notice ==
 
-= 1.1 =
+= 1.1.2 =
 
 This upgrade adds a couple new features and fixes a few small issues. See changelog for detailed list.
