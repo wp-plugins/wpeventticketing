@@ -64,6 +64,7 @@ Not at this time.
 * Bugfix for coupons not working if permalink is default style (?page_id=<number>)
 * Spelling fixes
 * Bugfix where menu wouldn't show up if thesis was installed
+* Make currency output match chosen currency
 
 = 1.1.1 =
 * Bugfix for missing </div> in form

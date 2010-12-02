@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.1
+Version: 1.1.2
 Author URI: http://9seeds.com/
 */
 
@@ -65,7 +65,8 @@ class eventTicketingSystem
 
 	function options()
 	{
-		add_menu_page('Tickets', 'Tickets', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png');
+		//echo '<pre>'.print_r($menu,true).'</pre>';
+		add_object_page('Tickets', 'Tickets', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png');
 		add_submenu_page('eventticketing', 'Reporting', 'Reporting', 'activate_plugins', 'eventticketing', array('eventTicketingSystem', 'ticketReporting'));
 		add_submenu_page('eventticketing', 'Ticket Options', 'Ticket Options', 'activate_plugins', 'ticketoptions', array('eventTicketingSystem', 'ticketOptionsControl'));
 		add_submenu_page('eventticketing', 'Tickets', 'Tickets', 'activate_plugins', 'tickettickets', array('eventTicketingSystem', 'ticketTicketsControl'));
@@ -76,7 +77,6 @@ class eventTicketingSystem
 		add_submenu_page('eventticketing', 'Instructions', 'Instructions', 'activate_plugins', 'ticketinstructions', array('eventTicketingSystem', 'ticketInstructions'));
 		add_submenu_page('eventticketing', 'Settings', 'Settings', 'activate_plugins', 'ticketsettings', array('eventTicketingSystem', 'ticketSettings'));
 	
-		//file_put_contents(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/defaults.ser',serialize(get_option("eventTicketingSystem")));
 	}
 
 	function ticketInstructions()
@@ -108,7 +108,7 @@ class eventTicketingSystem
 
 		echo '<h2>'.__('Extras').'</h2>';
 		echo '<h3>'.__('Reporting').'</h3>';
-		echo '<p>'.__('The <a href="admin.php?page=eventticketing">Reporting</a> page gives you a snap shot of the pacakges and ticket types sold, coupons used and a graph displaying the numebr of tickets used and still available. The Summary Report makes it easy to get a count of your attendees based on the data provided. Very handy for getting a count of how many t-shirts you need to order in each size.').'</p>';
+		echo '<p>'.__('The <a href="admin.php?page=eventticketing">Reporting</a> page gives you a snap shot of the packages and ticket types sold, coupons used and a graph displaying the number of tickets used and still available. The Summary Report makes it easy to get a count of your attendees based on the data provided. Very handy for getting a count of how many t-shirts you need to order in each size.').'</p>';
 
 		echo '<h3>'.__('Create Coupons').'</h3>';
 		echo '<p>'.__('On the <a href="admin.php?page=ticketcoupons">Coupons</a> page you can create an easy way to give discounts on tickets. Create a ticket code, set a flat-rate or percentage discount and select the number of times it can be used. This is handy for giving your speakers free entry to the event, but having them register so they are included in the attendee list and receive email notifications you might send.').'</p>';
@@ -131,6 +131,36 @@ class eventTicketingSystem
 
 		echo '</div>
 			</div>';
+	}
+
+	function currencyFormat($num,$type)
+	{
+		if(!strlen($type))
+			$type = 'USD';
+
+		switch($type)
+		{
+			case 'USD':
+				return '$'.number_format($num,2);
+			break;
+			case 'AUD':
+				return 'A $'.number_format($num,2);
+			break;
+			case 'CAD':
+				return 'C $'.number_format($num,2);
+			break;
+			case 'EUR':
+				return '&euro;'.number_format($num,2);
+			break;
+			case 'GBP':
+				return '&pound;'.number_format($num,2);
+			break;
+			case 'JYP':
+				return '&yen;'.number_format($num,2);
+			break;
+			default:
+				return $type.' '.number_format($num,2);
+		}
 	}
 
 	function ticketSettings()
@@ -594,7 +624,7 @@ echo '</div>';
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
-			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").''.number_format($order["price"],2)."\r\n\r\n", $headers);
+			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["price"],$o["paypalInfo"]["paypalCurrency"])."\r\n\r\n", $headers);
 		}		
 
 		return(array("packageHash"=>$packageHash,"ticketHash"=>$tickethashes));
@@ -909,11 +939,11 @@ echo '</div>';
 				echo "<tr>";
 				echo '<td>' . $k . '</td>';
 				echo '<td>' . $v["count"] . '</td>';
-				echo '<td>$' . number_format($v["money"], 2) . '</td>';
+				echo '<td>' . eventTicketingSystem::currencyFormat($v["money"],$o["paypalInfo"]["paypalCurrency"]). '</td>';
 				echo "</tr>";
 			}
 			$pTotal = $total;
-			echo '<tr><td>Total Package Revenue</td><td>&nbsp;</td><td>$' . number_format($pTotal, 2) . '</td></tr>';
+			echo '<tr><td>Total Package Revenue</td><td>&nbsp;</td><td>' . eventTicketingSystem::currencyFormat($pTotal,$o["paypalInfo"]["paypalCurrency"]). '</td></tr>';
 		}
 		echo "</tbody>";
 		echo "<thead>";
@@ -938,7 +968,7 @@ echo '</div>';
 			}
 			$cTotal = $total;
 		}
-		echo '<tr><td><strong>Total Revenue</strong></td><td>&nbsp;</td><td><strong>$' . number_format(($pTotal - $cTotal), 2) . '</strong></td></tr>';
+		echo '<tr><td><strong>Total Revenue</strong></td><td>&nbsp;</td><td><strong>' . eventTicketingSystem::currencyFormat(($pTotal-$cTotal),$o["paypalInfo"]["paypalCurrency"]) . '</strong></td></tr>';
 		echo "</tbody>";
 		echo "<thead>";
 		echo "<tr>";
@@ -1908,7 +1938,7 @@ echo '</div>';
 				{
 					echo '<tr>';
 					echo '<td><div class="packagename"><strong>' . $v->packageName . '</strong></div><div class="packagedescription">' . $v->packageDescription . '</div></td>';
-					echo '<td>'.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").'' . (is_numeric($v->price) ? number_format($v->price, "2") : '0.00') . '</td>';
+					echo '<td>'. (is_numeric($v->price) ? eventTicketingSystem::currencyFormat($order["price"],$o["paypalInfo"]["paypalCurrency"]) : eventTicketingSystem::currencyFormat(0,$o["paypalInfo"]["paypalCurrency"])) . '</td>';
 					if ($o["displayPackageQuantity"])
 					{
 						echo '<td>' . $packageRemaining . ' left</td>';
