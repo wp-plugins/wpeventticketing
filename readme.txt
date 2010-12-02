@@ -3,7 +3,7 @@ Contributors: toddhuish, vegasgeek, stastic
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
 Tested up to: 3.0.2
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 
 Use WPEventTicketing to manage and sell ticket for an event from your WordPress website.
 
