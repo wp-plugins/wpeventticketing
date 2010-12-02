@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.1.2
+Version: 1.1.3
 Author URI: http://9seeds.com/
 */
 
@@ -1938,7 +1938,7 @@ echo '</div>';
 				{
 					echo '<tr>';
 					echo '<td><div class="packagename"><strong>' . $v->packageName . '</strong></div><div class="packagedescription">' . $v->packageDescription . '</div></td>';
-					echo '<td>'. (is_numeric($v->price) ? eventTicketingSystem::currencyFormat($order["price"],$o["paypalInfo"]["paypalCurrency"]) : eventTicketingSystem::currencyFormat(0,$o["paypalInfo"]["paypalCurrency"])) . '</td>';
+					echo '<td>'. (is_numeric($v->price) ? eventTicketingSystem::currencyFormat($v->price,$o["paypalInfo"]["paypalCurrency"]) : eventTicketingSystem::currencyFormat(0,$o["paypalInfo"]["paypalCurrency"])) . '</td>';
 					if ($o["displayPackageQuantity"])
 					{
 						echo '<td>' . $packageRemaining . ' left</td>';
