@@ -1938,7 +1938,7 @@ echo '</div>';
 				{
 					echo '<tr>';
 					echo '<td><div class="packagename"><strong>' . $v->packageName . '</strong></div><div class="packagedescription">' . $v->packageDescription . '</div></td>';
-					echo '<td>'. (is_numeric($v->price) ? eventTicketingSystem::currencyFormat($order["price"],$o["paypalInfo"]["paypalCurrency"]) : eventTicketingSystem::currencyFormat(0,$o["paypalInfo"]["paypalCurrency"])) . '</td>';
+					echo '<td>'. (is_numeric($v->price) ? eventTicketingSystem::currencyFormat($v->price,$o["paypalInfo"]["paypalCurrency"]) : eventTicketingSystem::currencyFormat(0,$o["paypalInfo"]["paypalCurrency"])) . '</td>';
 					if ($o["displayPackageQuantity"])
 					{
 						echo '<td>' . $packageRemaining . ' left</td>';
