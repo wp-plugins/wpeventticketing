@@ -108,7 +108,7 @@ class eventTicketingSystem
 
 		echo '<h2>'.__('Extras').'</h2>';
 		echo '<h3>'.__('Reporting').'</h3>';
-		echo '<p>'.__('The <a href="admin.php?page=eventticketing">Reporting</a> page gives you a snap shot of the pacakges and ticket types sold, coupons used and a graph displaying the numebr of tickets used and still available. The Summary Report makes it easy to get a count of your attendees based on the data provided. Very handy for getting a count of how many t-shirts you need to order in each size.').'</p>';
+		echo '<p>'.__('The <a href="admin.php?page=eventticketing">Reporting</a> page gives you a snap shot of the packages and ticket types sold, coupons used and a graph displaying the number of tickets used and still available. The Summary Report makes it easy to get a count of your attendees based on the data provided. Very handy for getting a count of how many t-shirts you need to order in each size.').'</p>';
 
 		echo '<h3>'.__('Create Coupons').'</h3>';
 		echo '<p>'.__('On the <a href="admin.php?page=ticketcoupons">Coupons</a> page you can create an easy way to give discounts on tickets. Create a ticket code, set a flat-rate or percentage discount and select the number of times it can be used. This is handy for giving your speakers free entry to the event, but having them register so they are included in the attendee list and receive email notifications you might send.').'</p>';
