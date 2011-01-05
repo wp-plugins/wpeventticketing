@@ -41,7 +41,6 @@ a discount to people who place their order during a certain time.
 10. Create a blank page and add the shortcode `[wpeventticketing]`
 
 
-
 == Frequently Asked Questions ==
 
 = Can I run multiple events at one time? =
