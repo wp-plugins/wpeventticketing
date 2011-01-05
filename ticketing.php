@@ -813,7 +813,7 @@ echo '</div>';
 					if(!$data["final"])
 					{
 						echo '<tr style="background-color:LightPink;">';
-						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
+						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this ticket?\')) {document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';document.attendeeEdit.submit();return false;}">Delete</a></td>';
 						echo '<td>'.$data["Sold Time"].'</td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
 						//echo '<pre>'.print_r($data,true).'</pre>';exit;
@@ -842,7 +842,7 @@ echo '</div>';
 					else
 					{
 						echo '<tr>';
-						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';if (confirm(\'Are you sure you want to delete this ticket?\')) document.attendeeEdit.submit();return false;">Delete</a></td>';
+						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this ticket?\')) {document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';document.attendeeEdit.submit();return false;}">Delete</a></td>';
 						echo '</td>';
 						$tcsv = '';
 						foreach ($headerkey as $key)
@@ -1146,7 +1146,7 @@ echo '</div>';
 			{
 				echo "<tr>";
 				echo '<td>' . $v->displayName . '</td>';
-				echo '<td><a href="#" onclick="javascript:document.ticketOptionAdd.update.value=\'\';document.ticketOptionAdd.del.value=\'\';document.ticketOptionAdd.edit.value=\'' . $v->optionId . '\';document.ticketOptionAdd.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.ticketOptionAdd.update.value=\'\';document.ticketOptionAdd.edit.value=\'\';document.ticketOptionAdd.del.value=\'' . $v->optionId . '\';if (confirm(\'Are you sure you want to delete this option?\')) document.ticketOptionAdd.submit();return false;">Delete</a></td>';
+				echo '<td><a href="#" onclick="javascript:document.ticketOptionAdd.update.value=\'\';document.ticketOptionAdd.del.value=\'\';document.ticketOptionAdd.edit.value=\'' . $v->optionId . '\';document.ticketOptionAdd.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this option?\')) {document.ticketOptionAdd.update.value=\'\';document.ticketOptionAdd.edit.value=\'\';document.ticketOptionAdd.del.value=\'' . $v->optionId . '\';document.ticketOptionAdd.submit();return false;}">Delete</a></td>';
 			}
 
 			echo "</tr>";
@@ -1307,7 +1307,7 @@ echo '</div>';
 			{
 				echo "<tr>";
 				echo '<td>' . $v->displayName() . '</td>';
-				echo '<td><a href="#" onclick="javascript:document.ticketEdit.edit.value=\'' . $v->ticketId . '\'; document.ticketEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.ticketEdit.del.value=\'' . $v->ticketId . '\';if (confirm(\'Are you sure you want to delete this ticket? THIS CANNOT BE UNDONE\')) document.ticketEdit.submit();return false;">Delete</a>';
+				echo '<td><a href="#" onclick="javascript:document.ticketEdit.edit.value=\'' . $v->ticketId . '\'; document.ticketEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this ticket? THIS CANNOT BE UNDONE\')) {document.ticketEdit.del.value=\'' . $v->ticketId . '\';document.ticketEdit.submit();return false;}">Delete</a>';
 
 			}
 
@@ -1469,7 +1469,7 @@ echo '</div>';
 			{
 				echo '<tr '.($v->active === false ? "style=\"background-color:LightPink;\"" : "").'>';
 				echo '<td>' . $v->displayName() . '</td>';
-				echo '<td><a href="#" onclick="javascript:document.packageEdit.edit.value=\'' . $v->packageId . '\'; document.packageEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.packageEdit.del.value=\'' . $v->packageId . '\';if (confirm(\'Are you sure you want to delete this package? THIS CANNOT BE UNDONE\')) document.packageEdit.submit();return false;">Delete</a>';
+				echo '<td><a href="#" onclick="javascript:document.packageEdit.edit.value=\'' . $v->packageId . '\'; document.packageEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this package? THIS CANNOT BE UNDONE\')) {document.packageEdit.del.value=\'' . $v->packageId . '\';document.packageEdit.submit();return false;}">Delete</a>';
 				echo '&nbsp;|&nbsp;<a href="#" onclick="javascript:document.packageEdit.activate.value=\'' . $v->packageId . '\'; document.packageEdit.submit();return false;">'.($v->active === false ?  'Activate' : 'Deactivate').'</a>';
 				echo '</td>';
 			}
@@ -1621,7 +1621,7 @@ echo '</div>';
 				echo '<td>'.($v["type"] == "flat" ? "$".$v["amt"] : $v["amt"]."%").'</td>';
 				echo '<td>' . $v["uses"] . '</td>';
 				echo '<td>' . $v["used"] . '</td>';
-				echo '<td><a href="#" onclick="javascript:document.couponEdit.edit.value=\'' . $v["couponCode"] . '\'; document.couponEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.couponEdit.del.value=\'' . $v["couponCode"] . '\';if (confirm(\'Are you sure you want to delete this coupon\')) document.couponEdit.submit();return false;">Delete</a></td>';
+				echo '<td><a href="#" onclick="javascript:document.couponEdit.edit.value=\'' . $v["couponCode"] . '\'; document.couponEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this coupon\')) {document.couponEdit.del.value=\'' . $v["couponCode"] . '\';document.couponEdit.submit();return false;}">Delete</a></td>';
 				echo "</tr>";
 			}
 
@@ -1856,7 +1856,8 @@ echo '</div>';
 				foreach ($tickethashes as $hash)
 				{
 					$c++;
-					$url = get_permalink() . '?tickethash=' . $hash;
+					$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash;
+					
 					$href = '<a href="' . $url . '">' . $url . '</a>';
 					$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
 					$replaceThankYou .= '<li>Ticket ' . $c . ': ' . $href . '</li>';
@@ -2147,6 +2148,7 @@ echo '</div>';
 					}
 					$nvp['PAYMENTREQUEST_0_ITEMAMT'] = $total;
 
+					
 					$nvpStr = nvp($nvp);
 
 					//echo '<pre>'.print_r($nvp,true).'</pre>';
