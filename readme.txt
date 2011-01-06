@@ -26,6 +26,7 @@ a discount to people who place their order during a certain time.
 * Reporting page shows total sales and income broken down by package, coupons used and tickets sold.
 * Export attendee data to a CSV file.
 
+View a <a href="http://vimeo.com/18491170">walk-through video</a> that explains how to setup WP Event Ticketing.
 
 == Installation ==
 
