@@ -40,6 +40,7 @@ a discount to people who place their order during a certain time.
 9. Set up your email messaging
 10. Create a blank page and add the shortcode `[wpeventticketing]`
 
+We also have a <a href="http://vimeo.com/18491170">walk-through video</a> that explains how to setup WP Event Ticketing.
 
 == Frequently Asked Questions ==
 
