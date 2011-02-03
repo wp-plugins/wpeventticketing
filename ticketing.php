@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.1.4
+Version: 1.1.5
 Author URI: http://9seeds.com/
 */
 
@@ -552,9 +552,15 @@ echo '</div>';
 
 	function ticketSellPackage($packageId, $withRevenue = false, $emailTo = '')
 	{
+		//this doesn't replace the regular paypal method of selling a ticket
+		//(without modification)
+		//notably the $item array and $order array are different
+
+
 		$o = get_option("eventTicketingSystem");
 		$price = $withRevenue ? $o["packageProtos"][$packageId]->price : 0;
-			
+		$total = $withRevenue ? $o["packageProtos"][$packageId]->price : 0;
+
 		$item[] = array("quantity" => 1,
 						"name" => $o["packageProtos"][$packageId]->displayName(),
 						"desc" => $o["packageProtos"][$packageId]->packageDescription,
@@ -562,7 +568,7 @@ echo '</div>';
 						"packageid" => $packageId
 		);
 		
-		$order = array("items" => $item, "email" => $emailTo, "name" => "Admin Generated");
+		$order = array("items" => $item, "email" => $emailTo, "name" => "Admin Generated", "total"=>$total);
 		$packageHash = md5(microtime() . $packageId);
 		$package = clone $o["packageProtos"][$packageId];
 		$package->setPackageId($packageHash);
@@ -624,7 +630,7 @@ echo '</div>';
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
-			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["price"],$o["paypalInfo"]["paypalCurrency"])."\r\n\r\n", $headers);
+			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"],$o["paypalInfo"]["paypalCurrency"])."\r\n\r\n", $headers);
 		}		
 
 		return(array("packageHash"=>$packageHash,"ticketHash"=>$tickethashes));
@@ -1709,13 +1715,13 @@ echo '</div>';
 
 		//return redirect from paypal
 		//token=EC-4DR89227KU882313S&PayerID=5SYRSDFCC4Z56
-		if ((isset($_REQUEST["token"]) && isset($_REQUEST["PayerID"]) && strlen($_REQUEST["token"]) == 20 && strlen($_REQUEST["PayerID"]) == 13) || (isset($_REQUEST["couponSubmitNonce"]) && wp_verify_nonce($_REQUEST['couponSubmitNonce'], plugin_basename(__FILE__))))
+		if ((isset($_REQUEST["token"]) && isset($_REQUEST["PayerID"]) && strlen($_REQUEST["token"]) == 20 && strlen($_REQUEST["PayerID"]) == 13 && !$_REQUEST["paypalRedirect"]) || (isset($_REQUEST["couponSubmitNonce"]) && wp_verify_nonce($_REQUEST['couponSubmitNonce'], plugin_basename(__FILE__))))
 		{
 			if(!isset($_REQUEST['couponSubmitNonce']))
 			{
 				//get order details to send to paypal...again
 				$order = get_option("paypal_" . $_REQUEST["token"]);
-				$total = number_format($order["total"], 2);
+				$total = $order["total"];
 				$item = $order["items"];
 
 				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/nvp.php');
@@ -1740,9 +1746,7 @@ echo '</div>';
 					$nvp['L_PAYMENTREQUEST_0_QTY' . $k] = $i["quantity"];
 				}
 				$nvp['PAYMENTREQUEST_0_ITEMAMT'] = $total;
-
 				$nvpStr = nvp($nvp);
-
 				$resp = PPHttpPost($method, $nvpStr, $cred, $env);
 			}
 			else
@@ -1760,6 +1764,11 @@ echo '</div>';
 
 			if (isset($resp["ACK"]) && $resp["ACK"] == 'Success')
 			{
+				//Set _REQUEST var so that if this gets hook called again in a single
+				//http request it won't get run twice
+				//TODO: figure out what can cause this hook to run twice
+				$_REQUEST["paypalRedirect"] = 1;
+				
 				if (!isset($o["packageQuantities"]["totalTicketsSold"]))
 				{
 					$o["packageQuantities"]["totalTicketsSold"] = 0;
@@ -1871,7 +1880,7 @@ echo '</div>';
 				$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 				$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 				wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
-				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").''.number_format($order["price"],2)."\r\n\r\n", $headers);
+				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").''.number_format($order["total"],2)."\r\n\r\n", $headers);
 			}
 			else
 			{
@@ -2124,7 +2133,7 @@ echo '</div>';
 				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/nvp.php');
 				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/paypal.php');
 				$returnsite = get_permalink();
-				$total = number_format($total, 2);
+				
 				$p = $o["paypalInfo"];
 
 				if (is_array($item))
@@ -2452,7 +2461,7 @@ class package
 
 	public function setActive($active)
 	{
-		if($active)
+		if($active && $this->validatePackage())
 		{
 			$this->active = true;
 		}
@@ -2460,6 +2469,14 @@ class package
 		{
 			$this->active = false;
 		}
+	}
+
+	public function validatePackage()
+	{
+		if(count($this->tickets) == 0)
+			return false;
+		
+		return true;
 	}
 
 	public function setPackageId($id)
@@ -2511,6 +2528,11 @@ class package
 	public function delTicket($ticketId)
 	{
 		unset($this->tickets[$ticketId]);
+		
+		if(count($this->tickets) == 0)
+		{
+			$this->setActive(false);
+		}
 	}
 
 	public function validDates()

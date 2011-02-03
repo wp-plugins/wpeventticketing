@@ -28,7 +28,11 @@ function PPHttpPost($methodName_, $nvpStr_, $cred,$environment)
 
 	// Set the curl parameters.
 	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $API_Endpoint);
+	
+	//re: this bug http://curl.haxx.se/mail/lib-2010-06/0169.html
+	curl_setopt($ch, CURLOPT_SSLVERSION, 3);
+		
+		curl_setopt($ch, CURLOPT_URL, $API_Endpoint);
 	curl_setopt($ch, CURLOPT_VERBOSE, 1);
 
 	// Turn off the server and peer verification (TrustManager Concept).

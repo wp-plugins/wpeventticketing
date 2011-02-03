@@ -2,7 +2,7 @@
 Contributors: toddhuish, vegasgeek, stastic
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
-Tested up to: 3.0.4
+Tested up to: 3.1 RC3
 Stable tag: 1.1.4
 
 Use WPEventTicketing to manage and sell ticket for an event from your WordPress website.
@@ -59,6 +59,12 @@ Not at this time.
 
 
 == Changelog ==
+=1.1.5=
+* Bugfix don't format prices and reformat before sending to paypal. Causes errors when sending 1,000 instead of 1000
+* Bugfix fix totals not showing up in emails
+* Bugfix When shortcode hook is called twice on single WP request redirect from paypal don't let it run twice
+* Bugfix Force SSL v3 for Curl calls to paypal re: http://curl.haxx.se/mail/lib-2010-06/0169.html (thanks @wombatcombat)
+* Add check so if all the tickets for a package are deleted the package is de-activated 
 
 = 1.1.4 =
 * Bugfix Default permalink sites (?page_id=<number>) no longer cause illegal URLs to be generated
