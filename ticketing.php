@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.1.5
+Version: 1.1.6
 Author URI: http://9seeds.com/
 */
 
@@ -76,7 +76,11 @@ class eventTicketingSystem
 		add_submenu_page('eventticketing', 'Attendees', 'Attendees', 'activate_plugins', 'ticketattendeeedit', array('eventTicketingSystem', 'ticketAttendeeEdit'));
 		add_submenu_page('eventticketing', 'Instructions', 'Instructions', 'activate_plugins', 'ticketinstructions', array('eventTicketingSystem', 'ticketInstructions'));
 		add_submenu_page('eventticketing', 'Settings', 'Settings', 'activate_plugins', 'ticketsettings', array('eventTicketingSystem', 'ticketSettings'));
-	
+		
+		if(isset($_REQUEST["page"]) && $_REQUEST["page"] == "wpeventticketingdebug")
+		{
+			add_submenu_page('eventticketing', 'Debug', 'Debug', 'activate_plugins', 'wpeventticketingdebug', array('eventTicketingSystem', 'ticketDebug'));
+		}
 	}
 
 	function ticketInstructions()
@@ -163,6 +167,66 @@ class eventTicketingSystem
 		}
 	}
 
+	function ticketDebug()
+	{
+		global $wpdb;
+		$o = get_option("eventTicketingSystem");
+		/*
+		if (wp_verify_nonce($_POST['ticketDebugEmailNonce'], plugin_basename(__FILE__)))
+		{
+			$records = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'package_%'");
+			foreach($records as $r)
+			{
+			//	$p = unserialize(
+			}
+		}	
+		 */	
+		if (wp_verify_nonce($_POST['ticketDebugVerifyIntegrityNonce'], plugin_basename(__FILE__)))
+		{
+			$packages = eventTicketingSystem::getPackages();
+			if (is_array($packages))
+			{
+				foreach ($packages as $k => $p)
+				{
+					foreach($p->tickets as $t)
+					{
+						//echo '<pre>'.print_r($t,true).'</pre>';	exit;
+						if(!get_option('ticket_'.$t->ticketId))
+						{
+							$package = get_option('package_'.$k);
+							$package->delTicket($t->ticketId);
+							if(count($package->tickets) == 0)
+							{
+								echo "deleting empty package<br />";
+								delete_option('package_'.$k);
+							}
+							else
+							{
+								echo "deleting orphan ticket<br />";
+								update_option('package_'.$k,$package);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		echo '<div class="wrap">';
+		echo '<div id="icon-tools" class="icon32"></div><h2>Integrity Check</h2>';
+		echo '<form name="ticketDebugVerify" action="" method="post">';
+		echo '<input type="hidden" name="ticketDebugVerifyIntegrityNonce" id="ticketDebugVerifyIntegrityNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<div><input type="submit" class="button-primary" value="Check Integrity" /></div><div class="instructional">Check integrity of tickets and packages and search for orphans. <strong>IF THERE ARE ORPHANS THEY WILL BE DELETED. PLEASE GET A BACKUP OF YOUR DATABASE BEFORE CLICKING THIS BUTTON!</strong></div><br /><br />';
+		echo '</form>';
+		/*
+		echo '<div class="clear"></div>';
+		echo '<div id="icon-tools" class="icon32"></div><h2>Email Debug Info</h2>';
+		echo '<form name="ticketDebugEmail" action="" method="post">';
+		echo '<input type="hidden" name="ticketDebugEmailNonce" id="ticketDebugEmailNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<div><input type="button" class="button-primary" value="Email Debug Info" onClick="javascript:if(confirm(\'Are you sure you want to send all your WP Event Ticketing settings to the email address specified?\')) { document.ticketDebugEmail.submit(); } else { return false; }" /></div><div class="instructional">Email Settings to Developer. This will send a copy of your WP Event Ticketing setup to the email address specified with all sensitive infomation removed</div><br /><br />';
+		echo '</form>';
+		*/
+		echo '</div>';
+	}
 	function ticketSettings()
 	{
 		$o = get_option("eventTicketingSystem");
@@ -494,7 +558,7 @@ echo '</div>';
 		{
 			if(isset($_REQUEST["edit"]) && is_numeric($_REQUEST["edit"]) && $_REQUEST["edit"] == 1)
 			{
-				echo '<div id="icon-users" class="icon32"></div><h2>Edit Attendee</h2>';
+				echo '<div id="icon-profile" class="icon32"></div><h2>Edit Attendee</h2>';
 				eventTicketingSystem::ticketEditScreen();
 			}	
 			elseif(isset($_REQUEST["del"]) && is_numeric($_REQUEST["del"]) && $_REQUEST["del"] == 1)
@@ -516,6 +580,10 @@ echo '</div>';
 					delete_option("package_".$packageHash);
 					$o["packageQuantities"][$package->orderDetails["items"][0]["packageId"]]--;
 				}
+				else
+				{
+					update_option("package_".$packageHash,$package);
+				}
 			
 				update_option("eventTicketingSystem", $o);
 			}
@@ -535,19 +603,19 @@ echo '</div>';
 					echo '<option value="'.$p->packageId.'">'.$p->displayName().'</option>';
 				}
 				echo '</select></td></tr>';
-				echo '<tr><td>Add ticket value to revenue report</td><td><input type="checkbox" name="manualCreateWithRevenue"></td></tr>';
-				echo '<tr><td>Email Address of receipient</td><td><input name="manualCreateEmail"></td></tr>';
-				echo '<tr><td colspan="2"><input type="submit" class="button-primary" name="submitbutt" value="Create Ticket"></td></tr>';
+				echo '<tr><td>Add ticket value to revenue report</td><td><input type="checkbox" name="manualCreateWithRevenue" /></td></tr>';
+				echo '<tr><td>Email Address of receipient</td><td><input name="manualCreateEmail" /></td></tr>';
+				echo '<tr><td colspan="2"><input type="submit" class="button-primary" name="submitbutt" value="Create Ticket" /></td></tr>';
 				echo '</table>';
 				echo '</form>';
 
 			}
 			
-			echo '<div id="icon-users" class="icon32"></div><h2>Attendee List</h2>';
+			echo '<div id="icon-profile" class="icon32"></div><h2>Attendee List</h2>';
 			eventTicketingSystem::generateAttendeeTable(urldecode($_REQUEST["attendeesort"]));
 		}
 		echo '</div>';
-		echo '</div>';
+		//echo '</div>';
 	}
 
 	function ticketSellPackage($packageId, $withRevenue = false, $emailTo = '')
@@ -622,7 +690,7 @@ echo '</div>';
 			foreach ($tickethashes as $hash)
 			{
 				$c++;
-				$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash;
+				$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&amp;' : '?').'tickethash='.$hash;
 				$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
 			}
 
@@ -721,7 +789,7 @@ echo '</div>';
 			echo '<tbody>';
 			foreach($o["messages"]["sentMessages"] as $id => $m)
 			{
-				echo '<tr><td><a href="'.admin_url("admin.php?page=ticketnotify&messageId=".$id).'">'.$m["date"].'</a></td><td>'.substr($m["subj"],0,40).'</td><td>'.substr($m["body"],0,80).'</td></tr>';
+				echo '<tr><td><a href="'.admin_url("admin.php?page=ticketnotify&amp;messageId=".$id).'">'.$m["date"].'</a></td><td>'.substr($m["subj"],0,40).'</td><td>'.substr($m["body"],0,80).'</td></tr>';
 			}
 			echo'</tbody>';
 			echo '</table>';
@@ -730,6 +798,22 @@ echo '</div>';
 		echo '</div>';
 	}
 	
+	function getPackages()
+	{
+        global $wpdb;
+		//echo '<pre>'.print_r($v,true).'</pre>';exit;
+        $packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
+        if (is_array($packages))
+        {
+            foreach ($packages as $k => $v)
+            {
+				$v = unserialize($v->option_value);
+				$p[$v->packageId] = $v;
+			}
+        	return $p;
+		}
+		return array();
+	}
 	function getAttendees()
 	{
         global $wpdb;
@@ -788,16 +872,16 @@ echo '</div>';
 				usort($tr[$k], array($cmp, 'cmp'));
 			}
 			
+			echo '<form method="post" action="'.admin_url("admin.php?page=ticketattendeeedit").'" name="attendeeEdit">
+			<input type="hidden" name="attendeeEditNonce" id="attendeeEditNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+			<input type="hidden" name="del" value="" />
+			<input type="hidden" name="edit" value="" />
+			<input type="hidden" name="tickethash" value="" />
+			</form>';
 			foreach ($th as $k => $v)
 			{
 				$headerkey = array();
 
-				echo '<form method="post" action="'.admin_url("admin.php?page=ticketattendeeedit").'" name="attendeeEdit">
-				<input type="hidden" name="attendeeEditNonce" id="attendeeEditNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
-				<input type="hidden" name="del" value="" />
-				<input type="hidden" name="edit" value="" />
-				<input type="hidden" name="tickethash" value="" />
-				</form>';
 				echo "<table class='widefat'>";
 				echo "<thead>";
 				echo '<tr><th style="text-align: center;" colspan="'.(count($v)+1).'">'.$k.'</th></tr>';
@@ -806,7 +890,7 @@ echo '</div>';
 				foreach ($v as $header)
 				{
 					$headerkey[] = $header;
-					echo '<th><a href="'.admin_url("admin.php?page=ticketattendeeedit&attendeesort=".urlencode($header)).'">'.$header.'</a></th>';
+					echo '<th><a href="'.admin_url("admin.php?page=ticketattendeeedit&amp;attendeesort=".urlencode($header)).'">'.$header.'</a></th>';
 				}
 				echo "</tr>";
 				echo "</thead>";
@@ -819,7 +903,7 @@ echo '</div>';
 					if(!$data["final"])
 					{
 						echo '<tr style="background-color:LightPink;">';
-						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this ticket?\')) {document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';document.attendeeEdit.submit();return false;}">Delete</a></td>';
+						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&amp;' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this ticket?\')) {document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';document.attendeeEdit.submit();return false;}">Delete</a></td>';
 						echo '<td>'.$data["Sold Time"].'</td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
 						//echo '<pre>'.print_r($data,true).'</pre>';exit;
@@ -848,8 +932,8 @@ echo '</div>';
 					else
 					{
 						echo '<tr>';
-						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this ticket?\')) {document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';document.attendeeEdit.submit();return false;}">Delete</a></td>';
-						echo '</td>';
+						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&amp;' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this ticket?\')) {document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';document.attendeeEdit.submit();return false;}">Delete</a></td>';
+						//echo '</td>';
 						$tcsv = '';
 						foreach ($headerkey as $key)
 						{
@@ -870,9 +954,9 @@ echo '</div>';
 				}
 				echo '<tr><td colspan="'.count($headerkey).'">';
 				echo '<form action="" method="post">
-            	<input type="hidden" name="exportAttendeeNonce" id="exportAttendeeNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
-				<input type="hidden" name="attendeeCsv" value="'.base64_encode($csv).'">
-				<input type="submit" class="button-primary" name="submit" value="Export Attendee List">
+            	<input type="hidden" name="exportAttendeeNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+				<input type="hidden" name="attendeeCsv" value="'.base64_encode($csv).'" />
+				<input type="submit" class="button-primary" name="submit" value="Export Attendee List" />
 				</form>';
 				echo '</td></tr>';
 				echo '</tbody>';
@@ -896,6 +980,19 @@ echo '</div>';
 				$v = unserialize($v->option_value);
 				$package[$v->displayName()]['count']++;
 				$package[$v->displayName()]['money'] += $v->price;
+				
+				if(is_array($v->coupon))
+				{
+					switch($v->coupon["type"])
+					{
+						case 'percent':
+							$discounted += $o["packageProtos"][$v->coupon["packageId"]]->price - ($o["packageProtos"][$v->coupon["packageId"]]->price * (1-$v->coupon["amt"]/100));
+						break;
+						case 'flat':
+							$discounted += $o["packageProtos"][$v->coupon["packageId"]]->price - $v->coupon["amt"];
+						break;
+					}
+				}
 				foreach ($v->tickets as $t)
 				{
 					$t->orderDetails = $v->orderDetails;
@@ -905,20 +1002,6 @@ echo '</div>';
 				}
 			}
 		}
-		$coupons = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'coupon_%'");
-		if (is_array($coupons))
-		{
-			foreach ($coupons as $k => $v)
-			{
-				$v = unserialize($v->option_value);
-				foreach ($v["items"] as $c)
-				{
-					$coupon[$c["name"]]['count'] += $c["quantity"];
-					$coupon[$c["name"]]['money'] += $o["packageProtos"][$c["packageid"]]->price;
-				}
-			}
-		}
-
 		
 		$pTotal = $cTotal = 0;
 
@@ -949,33 +1032,23 @@ echo '</div>';
 				echo "</tr>";
 			}
 			$pTotal = $total;
-			echo '<tr><td>Total Package Revenue</td><td>&nbsp;</td><td>' . eventTicketingSystem::currencyFormat($pTotal,$o["paypalInfo"]["paypalCurrency"]). '</td></tr>';
+			echo '<tr><td><strong>Total Package Revenue</strong><br />(minus coupon discounts)</td><td>&nbsp;</td><td><strong>' . eventTicketingSystem::currencyFormat($pTotal,$o["paypalInfo"]["paypalCurrency"]). '</strong></td></tr>';
 		}
 		echo "</tbody>";
-		echo "<thead>";
-		echo "<tr>";
-		echo "<th>Coupon</th>";
-		echo "<th>Used</th>";
-		echo "<th>Discounted</th>";
-		echo "</tr>";
-		echo "</thead>";
-		echo "<tbody>";
-		if (is_array($coupon))
+
+		if($discounted)
 		{
-			$total = 0;
-			foreach ($coupon as $k => $v)
-			{
-				$total += $v["money"];
-				echo "<tr>";
-				echo '<td>' . $k . '</td>';
-				echo '<td>' . $v["count"] . '</td>';
-				echo '<td>($' . $v["money"] . ')</td>';
-				echo "</tr>";
-			}
-			$cTotal = $total;
+			echo "<thead>";
+			echo "<tr>";
+			echo "<th>Coupon</th>";
+			echo "<th>&nbsp;</th>";
+			echo "<th>Discounted</th>";
+			echo "</tr>";
+			echo "</thead>";
+			echo "<tbody>";
+			echo '<tr><td><strong>Total Coupon Discounts</strong></td><td>&nbsp;</td><td><strong>' . eventTicketingSystem::currencyFormat($discounted,$o["paypalInfo"]["paypalCurrency"]) . '</strong></td></tr>';
+			echo "</tbody>";
 		}
-		echo '<tr><td><strong>Total Revenue</strong></td><td>&nbsp;</td><td><strong>' . eventTicketingSystem::currencyFormat(($pTotal-$cTotal),$o["paypalInfo"]["paypalCurrency"]) . '</strong></td></tr>';
-		echo "</tbody>";
 		echo "<thead>";
 		echo "<tr>";
 		echo "<th>Ticket</th>";
@@ -1038,7 +1111,7 @@ echo '</div>';
 				}
 			}
 			echo '<div id="summary_reports_left">';
-			echo '<div id="icon-users" class="icon32"></div><h2>Summary Reports</h2>';
+			echo '<div id="icon-profile" class="icon32"></div><h2>Summary Reports</h2>';
 			foreach($th as $hk=> $hv)
 			{
 				foreach($hv as $kk => $vv)
@@ -1075,7 +1148,7 @@ echo '</div>';
 			echo '<tbody>';
 			foreach($summaryType as $kk => $vv)
 			{
-				echo '<tr><td><a href="'.admin_url("admin.php?page=eventticketing&summary=".urlencode($kk)).'">'.$kk.'</a></td></tr>';
+				echo '<tr><td><a href="'.admin_url("admin.php?page=eventticketing&amp;summary=".urlencode($kk)).'">'.$kk.'</a></td></tr>';
 			}
 			echo '</tbody>';
 			echo '</table>';
@@ -1623,7 +1696,7 @@ echo '</div>';
 			{
 				echo "<tr>";
 				echo '<td>' . $v["couponCode"] . '</td>';
-				echo '<td>' . $o["packageProtos"][$v["packageId"]]->displayName() . '</td>';
+				echo '<td>' . ($o["packageProtos"][$v["packageId"]] ? $o["packageProtos"][$v["packageId"]]->displayName() : "<span style=\"background-color:LightPink;\">Invalid Coupon</span>" ). '</td>';
 				echo '<td>'.($v["type"] == "flat" ? "$".$v["amt"] : $v["amt"]."%").'</td>';
 				echo '<td>' . $v["uses"] . '</td>';
 				echo '<td>' . $v["used"] . '</td>';
@@ -1865,7 +1938,7 @@ echo '</div>';
 				foreach ($tickethashes as $hash)
 				{
 					$c++;
-					$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash;
+					$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&amp;' : '?').'tickethash='.$hash;
 					
 					$href = '<a href="' . $url . '">' . $url . '</a>';
 					$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
@@ -2125,7 +2198,7 @@ echo '</div>';
 					$couponSubmitNonce = wp_create_nonce(plugin_basename(__FILE__));
 					
 					add_option('coupon_' . $couponSubmitNonce, array("items" => $item, "email" => $_REQUEST["packagePurchaseEmail"], "name" => $_REQUEST["packagePurchaseName"]));
-					header('Location: ' . get_permalink() .(strstr(get_permalink(), '?') ? '&' : '?'). 'couponSubmitNonce=' . $couponSubmitNonce);
+					header('Location: ' . get_permalink() .(strstr(get_permalink(), '?') ? '&amp;' : '?'). 'couponSubmitNonce=' . $couponSubmitNonce);
 					exit;
 				}
 				
@@ -2325,26 +2398,16 @@ class ticket
 		echo '<div id="eventTicket">';
 		echo '<div class="ticketName">' . ($this->ticketName == '' ? 'Unnamed' : $this->ticketName) . '</div>';
 		/*
-
 				  echo '<div>';
-
 				  if(is_array($this->ticketOptions))
-
 				  {
-
 					  foreach ($this->ticketOptions as $o)
-
 					  {
-
 						  echo '<div>'.$o->displayName.'</div>';
-
 					  }
-
 				  }
-
 				  echo '</div>';
-
-				   */
+		*/
 		echo '</div>';
 
 	}
