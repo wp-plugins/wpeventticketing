@@ -59,16 +59,16 @@ Not at this time.
 
 
 == Changelog ==
-=1.1.7=
+= 1.1.7 =
 * Bugfix don't encode & to &amp; in emails...bad llama.
 
-=1.1.6=
+= 1.1.6 =
 * Bugfix more clearly display revenue and discounted coupon revenue in report
 * Bugfix multi ticket packages can now have their attendees deleted properly
 * Bugfix Setups with multiple ticket types can now edit and delete attendees properly
 * Add super secret debug functionality 
 
-=1.1.5=
+= 1.1.5 =
 * Bugfix don't format prices and reformat before sending to paypal. Causes errors when sending 1,000 instead of 1000
 * Bugfix fix totals not showing up in emails
 * Bugfix When shortcode hook is called twice on single WP request redirect from paypal don't let it run twice
@@ -108,6 +108,6 @@ Not at this time.
 
 == Upgrade Notice ==
 
-= 1.1.6 =
+= 1.1.7 =
 
-This upgrade adds a couple new features and fixes a few small issues. See changelog for detailed list.
+This upgrade fixes a small issue with email formatting. See changelog for detailed list.
