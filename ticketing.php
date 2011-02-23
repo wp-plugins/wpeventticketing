@@ -690,7 +690,7 @@ echo '</div>';
 			foreach ($tickethashes as $hash)
 			{
 				$c++;
-				$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&amp;' : '?').'tickethash='.$hash;
+				$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash;
 				$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
 			}
 
@@ -1938,7 +1938,7 @@ echo '</div>';
 				foreach ($tickethashes as $hash)
 				{
 					$c++;
-					$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&amp;' : '?').'tickethash='.$hash;
+					$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash;
 					
 					$href = '<a href="' . $url . '">' . $url . '</a>';
 					$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
