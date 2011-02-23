@@ -2,8 +2,8 @@
 Contributors: toddhuish, vegasgeek, stastic
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
-Tested up to: 3.1 RC3
-Stable tag: 1.1.6
+Tested up to: 3.1
+Stable tag: 1.1.7
 
 Use WPEventTicketing to manage and sell ticket for an event from your WordPress website.
 
@@ -59,6 +59,9 @@ Not at this time.
 
 
 == Changelog ==
+=1.1.7=
+* Bugfix don't encode & to &amp; in emails...bad llama.
+
 =1.1.6=
 * Bugfix more clearly display revenue and discounted coupon revenue in report
 * Bugfix multi ticket packages can now have their attendees deleted properly
