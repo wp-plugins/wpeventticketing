@@ -42,6 +42,26 @@ View a <a href="http://vimeo.com/18491170">walk-through video</a> that explains 
 9. Set up your email messaging
 10. Create a blank page and add the shortcode `[wpeventticketing]`
 
+(*optionally*)
+11. Create a blank page and add the shortcode `[wpeventticketingattendee]`
+12. Add something like the following to your stylesheet
+`.event-attendee {
+    width: 45%;
+}
+.event-attendee.even {
+    float: right;
+}
+.event-attendee.odd {
+    float: left;
+}
+.event-attendee .attendee-gravatar {
+    float: left;
+}
+.event-attendee .attendee-gravatar img{
+    width: 48px;
+    height: 48px;
+}`
+
 == Frequently Asked Questions ==
 
 = Can I run multiple events at one time? =
@@ -59,6 +79,12 @@ Not at this time.
 
 
 == Changelog ==
+= 1.1.8 =
+* Add attendee page shortcode
+* Change thank you page display to be links
+* Change thank you page links and purchaser email and admin summary email to contain ticket names of what was purchased
+* Add package names and coupon names to attendee list and export pages
+
 = 1.1.7 =
 * Bugfix don't encode & to &amp; in emails...bad llama.
 

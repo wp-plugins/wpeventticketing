@@ -13,6 +13,7 @@ add_action('admin_init', array("eventTicketingSystem", "adminscripts"));
 add_action('wp_print_styles', array("eventTicketingSystem", "frontendscripts"));
 add_action('admin_menu', array("eventTicketingSystem", "options"));
 add_shortcode('wpeventticketing', array("eventTicketingSystem", 'shortcode'));
+add_shortcode('wpeventticketingattendee', array("eventTicketingSystem", 'attendeeShortcode'));
 add_action('template_redirect', array("eventTicketingSystem", "paypal"));
 add_action('wpmu_new_blog',array("eventTicketingSystem","activate"),1);
 
@@ -541,7 +542,7 @@ echo '</div>';
 				$withRevenue = true;
 			
 			$hashes = eventTicketingSystem::ticketSellPackage($_REQUEST["manualCreatePackageId"], $withRevenue, $_REQUEST["manualCreateEmail"]);
-			$_REQUEST["tickethash"] = $hashes["ticketHash"][0];
+			$_REQUEST["tickethash"] = $hashes["ticketHash"][0]["hash"];
 			
 			echo '<div id="icon-users" class="icon32"></div><h2>Create Attendee</h2>';
 			eventTicketingSystem::ticketEditScreen();
@@ -674,7 +675,7 @@ echo '</div>';
 			$package->addTicket($ticket);
 			add_option("ticket_" . $ticketHash, $packageHash);
 			$o["packageQuantities"]["totalTicketsSold"]++;
-			$tickethashes[] = $ticketHash;
+			$tickethashes[] = array("hash"=>$ticketHash,"name"=>$package->packageName);
 		}
 		$o["packageQuantities"][$packageId]++;
 		add_option("package_" . $packageHash, $package);
@@ -690,15 +691,24 @@ echo '</div>';
 			foreach ($tickethashes as $hash)
 			{
 				$c++;
-				$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash;
-				$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
+				$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash["hash"];
+				$emaillinks .= 'Ticket ' . $c . ': '.$hash["name"].' - ' . $url . "\r\n";
 			}
 
 			//$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
-			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"],$o["paypalInfo"]["paypalCurrency"])."\r\n\r\n", $headers);
+			
+			$ordersummarymsg = "Order Placed\r\n";
+			
+			$ordersummarymsg .= $order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"],$o["paypalInfo"]["paypalCurrency"])."\r\n\r\n";
+			foreach($order["items"] as $ord)
+			{
+				$ordersummarymsg .= $ord["quantity"].' X '.$ord["name"].' for '.eventTicketingSystem::currencyFormat($ord["price"],$o["paypalInfo"]["paypalCurrency"])." each\r\n";
+			}
+			$ordersummarymsg .= "\r\n";
+			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", $ordersummarymsg, $headers);
 		}		
 
 		return(array("packageHash"=>$packageHash,"ticketHash"=>$tickethashes));
@@ -824,8 +834,10 @@ echo '</div>';
             {
                 $v = unserialize($v->option_value);
                 foreach ($v->tickets as $t)
-                {
-                    $t->orderDetails = $v->orderDetails;
+				{
+					//echo '<pre>'.print_r($v,true).'</pre>';exit;
+					$t->orderDetails = $v->orderDetails;
+					$t->orderDetails["coupon"] = $v->coupon;
                     $attendee[$t->displayName()][] = $t;
                 }
             }
@@ -834,14 +846,9 @@ echo '</div>';
 		return array();
 	}
 
-	function generateAttendeeTable($sort = 'Sold Time')
+	function getAttendeeArr()
 	{
 		$o = get_option("eventTicketingSystem");
-		if(!strlen($sort))
-		{
-			$sort = 'Sold Time';
-		}
-		
 		$attendee = eventTicketingSystem::getAttendees();
 		if (is_array($attendee))
 		{
@@ -852,7 +859,20 @@ echo '</div>';
 					$trtmp = array();
 					//populate the soldtime stuff in the display array
 					$th[$ticketType]['Sold Time'] = 'Sold Time';
+					$th[$ticketType]['Package Type'] = 'Package Type';
+					$th[$ticketType]['Coupon'] = 'Coupon';
+
 					$trtmp['Sold Time'] = date("m/d/Y H:i:s",$ticket->soldTime);
+					if(is_array($ticket->orderDetails["coupon"]))
+					{
+						$trtmp['Package Type'] = $o["packageProtos"][$ticket->orderDetails["coupon"]["packageId"]]->packageName;
+						$trtmp['Coupon'] = $ticket->orderDetails["coupon"]["couponCode"];
+					}
+					else
+					{
+						$trtmp['Package Type'] = $ticket->orderDetails["items"][0]["name"];
+						$trtmp['Coupon'] = '';
+					}
 
 					foreach ($ticket->ticketOptions as $op)
 					{
@@ -865,7 +885,115 @@ echo '</div>';
 					$tr[$ticketType][] = $trtmp;
 				}
 			}
+			
+			return array("tr"=>$tr,"th"=>$th);
+		}
+		else
+		{
+			return false;
+		}
 	
+	}
+
+	function attendeeShortcode($atts)
+	{
+		
+		extract(shortcode_atts(array(
+			'sort' => 'Sold Time',
+		), $atts));
+	
+		ob_start();
+	
+		$o = get_option("eventTicketingSystem");
+
+		$attendee = eventTicketingSystem::getAttendees();
+		$tmp = eventTicketingSystem::getAttendeeArr();
+		
+		$tr = $tmp["tr"];
+		$th = $tmp["th"];
+		
+		if (is_array($attendee))
+		{
+			$cmp = new arbitrarySort($sort);
+			foreach($tr as $k => $v)
+			{
+				usort($tr[$k], array($cmp, 'cmp'));
+			}
+		
+			foreach ($th as $k => $v)
+			{
+				$c = 0;
+				foreach ($tr[$k] as $data)
+				{
+					if($data["final"])
+					{
+						$c++;
+						echo '<div class="event-attendee '.($c % 2 == 0 ? "even" : "odd").'">';
+						echo '<div class="attendee-gravatar">'.get_avatar( $data['Email'], $size = '96').'</div>';
+						echo '<div class="attendee-name">'.$data["First Name"].' '.$data["Last Name"].'</div>';
+						echo strlen($data["Twitter"]) ? '<div class="attendee-twitter"><a href="http://twitter.com/'.str_replace('@','',$data["Twitter"]).'">'.(strstr($data["Twitter"],'@') ? '' : '@').$data["Twitter"].'</a></div>' : '';
+						echo '</div>';
+					}
+				}
+			}
+		}
+		
+		return ob_get_clean();
+	}
+
+
+	function generateAttendeeTable($sort = 'Sold Time')
+	{
+		$o = get_option("eventTicketingSystem");
+		if(!strlen($sort))
+		{
+			$sort = 'Sold Time';
+		}
+		
+		$attendee = eventTicketingSystem::getAttendees();
+		$tmp = eventTicketingSystem::getAttendeeArr();
+		
+		$tr = $tmp["tr"];
+		$th = $tmp["th"];
+
+		if (is_array($attendee))
+		{
+			/*
+			foreach ($attendee as $ticketType => $v)
+			{
+				foreach ($v as $ticket)
+				{
+					$trtmp = array();
+					//populate the soldtime stuff in the display array
+					$th[$ticketType]['Sold Time'] = 'Sold Time';
+					$th[$ticketType]['Package Type'] = 'Package Type';
+					$th[$ticketType]['Coupon'] = 'Coupon';
+
+					$trtmp['Sold Time'] = date("m/d/Y H:i:s",$ticket->soldTime);
+					if(is_array($ticket->orderDetails["coupon"]))
+					{
+						$trtmp['Package Type'] = $o["packageProtos"][$ticket->orderDetails["coupon"]["packageId"]]->packageName;
+						$trtmp['Coupon'] = $ticket->orderDetails["coupon"]["couponCode"];
+					}
+					else
+					{
+						$trtmp['Package Type'] = $ticket->orderDetails["items"][0]["name"];
+						$trtmp['Coupon'] = '';
+					}
+
+					foreach ($ticket->ticketOptions as $op)
+					{
+						$th[$ticketType][$op->displayName] = $op->displayName;
+						$trtmp[$op->displayName] = $op->value;
+					}
+					$trtmp["final"] = $ticket->final;
+					$trtmp["orderdetails"] = $ticket->orderDetails;
+					$trtmp["hash"] = $ticket->ticketId;
+					$tr[$ticketType][] = $trtmp;
+				}
+			}
+			*/
+
 			$cmp = new arbitrarySort($sort);
 			foreach($tr as $k => $v)
 			{
@@ -905,6 +1033,8 @@ echo '</div>';
 						echo '<tr style="background-color:LightPink;">';
 						echo '<td><a href="'.($o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&amp;' : '?').'tickethash='.$data["hash"]).'">Link</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:document.attendeeEdit.edit.value=\'1\';document.attendeeEdit.tickethash.value=\'' . $data["hash"] . '\';document.attendeeEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this ticket?\')) {document.attendeeEdit.del.value=\'1\';document.attendeeEdit.tickethash.value=\''.$data["hash"].'\';document.attendeeEdit.submit();return false;}">Delete</a></td>';
 						echo '<td>'.$data["Sold Time"].'</td>';
+						echo '<td>'.$data["Package Type"].'</td>';
+						echo '<td>'.$data["Coupon"].'</td>';
 						echo '<td colspan="'.count($headerkey).'">'.(is_array($data["orderdetails"]) ? $data["orderdetails"]["name"].': '.$data["orderdetails"]["email"] : "").'</td>';
 						//echo '<pre>'.print_r($data,true).'</pre>';exit;
 						if(!strlen($data["Email"]))
@@ -970,7 +1100,6 @@ echo '</div>';
 	{
 		global $wpdb;
 		$o = get_option("eventTicketingSystem");
-		
 		
 		$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
 		if (is_array($packages))
@@ -1911,11 +2040,11 @@ echo '</div>';
 									$ticket->ticketOptions[$tk]->value = $n[1];
 								}
 							}
-
+							
 							$package->addTicket($ticket);
 							add_option("ticket_" . $ticketHash, $packageHash);
 							$o["packageQuantities"]["totalTicketsSold"]++;
-							$tickethashes[] = $ticketHash;
+							$tickethashes[] = array("hash"=>$ticketHash,"name"=>$package->packageName);
 						}
 						$o["packageQuantities"][$i["packageid"]]++;
 						add_option("package_" . $packageHash, $package);
@@ -1938,10 +2067,10 @@ echo '</div>';
 				foreach ($tickethashes as $hash)
 				{
 					$c++;
-					$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash;
+					$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash["hash"];
 					
-					$href = '<a href="' . $url . '">' . $url . '</a>';
-					$emaillinks .= 'Ticket ' . $c . ': ' . $url . "\r\n";
+					$href = '<a href="' . $url . '">' . $hash["name"] . '</a>';
+					$emaillinks .= 'Ticket ' . $c . ': '.$hash["name"].' - ' . $url . "\r\n";
 					$replaceThankYou .= '<li>Ticket ' . $c . ': ' . $href . '</li>';
 
 				}
@@ -1949,11 +2078,18 @@ echo '</div>';
 				
 				echo '<div class="info">' . str_replace('[ticketlinks]', $replaceThankYou, $o["messages"]["messageThankYou"]) . '</div>';
 				
-				//$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
 				$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 				$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
 				wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
-				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", "Order Placed\r\n".$order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.($o["paypalInfo"]["paypalCurrency"] == 'USD' ? "$" : $o["paypalInfo"]["paypalCurrency"]."$").''.number_format($order["total"],2)."\r\n\r\n", $headers);
+				
+				$ordersummarymsg = "Order Placed\r\n";
+				$ordersummarymsg .= $order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"],$o["paypalInfo"]["paypalCurrency"])."\r\n\r\n";
+				foreach($order["items"] as $ord)
+				{
+					$ordersummarymsg .= $ord["quantity"].' X '.$ord["name"].' for '.eventTicketingSystem::currencyFormat($ord["price"],$o["paypalInfo"]["paypalCurrency"])." each\r\n";
+				}
+				$ordersummarymsg .= "\r\n";
+				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", $ordersummarymsg, $headers);
 			}
 			else
 			{
@@ -2015,7 +2151,7 @@ echo '</div>';
 					$packageRemaining = floor($totalRemaining / $v->ticketQuantity);
 					$packageCounter = $packageRemaining > 10 ? 10 : $packageRemaining;
 				}
-				//echo $v->packageId."::".$packageCounter."<br>";
+				
 
 				if ($packageCounter > 0 && $v->validDates() && $v->active !== false)
 				{
