@@ -1,11 +1,12 @@
 === WP Event Ticketing ===
 Contributors: toddhuish, vegasgeek, stastic
+Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
 Tested up to: 3.1
 Stable tag: 1.1.7
 
-Use WPEventTicketing to manage and sell ticket for an event from your WordPress website.
+Manage and sell ticket for an event.
 
 == Description ==
 
@@ -14,9 +15,9 @@ WordPress website.
 
 Contains the following features:
 
-* Collect payments payment via paypal.
+* Collect payments via paypal.
 * Set total attendance limit.
-* Multiple ticket types. For example, ticket type A includes a t-shirt while ticket type B2 does not.
+* Multiple ticket types. For example, ticket type A includes a t-shirt while ticket type B does not.
 * Custom ticket options. This allows you to decide what information you want ticket purchasers to
 provide. For example, name, address, shirt size, twitter handle, etc...
 * Create ticket packages. For example, early bird specials. Ticket packages can be used to give
@@ -25,6 +26,7 @@ a discount to people who place their order during a certain time.
 * Send email to purchaser upon order completion.
 * Reporting page shows total sales and income broken down by package, coupons used and tickets sold.
 * Export attendee data to a CSV file.
+* Display a list of event attendees using a shortcode
 
 View a <a href="http://vimeo.com/18491170">walk-through video</a> that explains how to setup WP Event Ticketing.
 
@@ -79,7 +81,7 @@ Not at this time.
 
 
 == Changelog ==
-= 1.1.8 =
+= 1.2 =
 * Add attendee page shortcode
 * Change thank you page display to be links
 * Change thank you page links and purchaser email and admin summary email to contain ticket names of what was purchased
