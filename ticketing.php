@@ -746,7 +746,7 @@ echo '</div>';
 	{
 		$o = get_option("eventTicketingSystem");
 		
-		if (isset($_POST['attendeeNotificationNonce'] && wp_verify_nonce($_POST['attendeeNotificationNonce'], plugin_basename(__FILE__)))
+		if (isset($_POST['attendeeNotificationNonce']) && wp_verify_nonce($_POST['attendeeNotificationNonce'], plugin_basename(__FILE__)))
 		{
 			global $wpdb;
 			$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
