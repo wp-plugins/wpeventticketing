@@ -4,7 +4,7 @@ Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
 Tested up to: 3.1
-Stable tag: 1.2
+Stable tag: 1.2.1
 
 Manage and sell ticket for an event.
 
@@ -81,6 +81,10 @@ Not at this time.
 
 
 == Changelog ==
+
+= 1.2.1 =
+* Fixed Syntax error
+
 = 1.2 =
 * Add attendee page shortcode
 * Change thank you page display to be links
