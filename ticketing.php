@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.1.7
+Version: 1.2
 Author URI: http://9seeds.com/
 */
 
@@ -44,7 +44,7 @@ class eventTicketingSystem
 	function adminscripts()
 	{
 		//look for export button being clicked, export attendee list as csv
-		if(wp_verify_nonce($_POST['exportAttendeeNonce'], plugin_basename(__FILE__)) && strlen($_REQUEST["attendeeCsv"]))
+		if(isset($_POST['exportAttendeeNonce']) && wp_verify_nonce($_POST['exportAttendeeNonce'], plugin_basename(__FILE__)) && strlen($_REQUEST["attendeeCsv"]))
 		{
 			header("Content-type: text/csv");
 			header("Content-Disposition: attachment;filename=attendee_export.csv");
@@ -126,6 +126,24 @@ class eventTicketingSystem
 
 		echo '<h3>'.__('Export Attendee List').'</h3>';
 		echo '<p>'.__('Also on the Attendee page you have the option to export a list of all the attendees. This creates a CSV of all attendees and the data they\'ve provided.').'</p>';
+
+		echo '<h3>'.__('Display Attendees Shortcode').'</h3>';
+		echo '<p>'.__('Place a shortcode on a page and your attendees will be displayed. [wpeventticketingattendee] will display the list sorted by sold time. You can sort the list by first name [wpeventticketingattendee sort="First Name"], last name [wpeventticketingattendee sort="Last Name"] or twitter id [wpeventticketingattendee sort="Twitter"] as well.<br /><br />If you use the shortcode you will have to put something similar to the following into your stylesheet.').'</p><pre>.event-attendee {
+    width: 45%;
+}
+.event-attendee.even {
+    float: right;
+}
+.event-attendee.odd {
+    float: left;
+}
+.event-attendee .attendee-gravatar {
+    float: left;
+}
+.event-attendee .attendee-gravatar img{
+    width: 48px;
+    height: 48px;
+}</pre>';
 
 		echo '<p><hr></p>';
 		echo '<h3>'.__('Looking for more features?').'</h3>';
@@ -537,15 +555,25 @@ echo '</div>';
 		//manualy create a ticket
 		if (wp_verify_nonce($_POST['manualCreatePackageNonce'], plugin_basename(__FILE__)) && is_numeric($_REQUEST["manualCreatePackageId"]) && isset($o["packageProtos"][$_REQUEST["manualCreatePackageId"]]))
 		{
-			$withRevenue = false;
-			if(isset($_REQUEST["manualCreateWithRevenue"]))
-				$withRevenue = true;
-			
-			$hashes = eventTicketingSystem::ticketSellPackage($_REQUEST["manualCreatePackageId"], $withRevenue, $_REQUEST["manualCreateEmail"]);
-			$_REQUEST["tickethash"] = $hashes["ticketHash"][0]["hash"];
-			
-			echo '<div id="icon-users" class="icon32"></div><h2>Create Attendee</h2>';
-			eventTicketingSystem::ticketEditScreen();
+			if(isset($_POST["manualCreateEmail"]) && !check_email_address($_POST["manualCreateEmail"]))
+			{
+				echo '<div id="message" class="error"><p>Email address is incorrect or blank</p></div>';
+				unset($_REQUEST["manualCreatePackageId"]);
+			}
+			else
+			{
+				$withRevenue = false;
+				if(isset($_REQUEST["manualCreateWithRevenue"]))
+					$withRevenue = true;
+				
+				$hashes = eventTicketingSystem::ticketSellPackage($_REQUEST["manualCreatePackageId"], $withRevenue, $_REQUEST["manualCreateEmail"]);
+				$_REQUEST["tickethash"] = $hashes["ticketHash"][0]["hash"];
+				
+				echo '<div id="icon-users" class="icon32"></div><h2>Create Attendee</h2>';
+				echo '<div class="instructional">The ticket has been created and an email has been seent to the recipient instructing them to fill out their details. If you would prefer to fill them out yourself you may do so below. Otherwise go <a href="'.admin_url("admin.php?page=ticketattendeeedit").'">back to attendees</a></div>';
+				echo '<a href="'.admin_url("admin.php?page=ticketattendeeedit").'">Back to Attendees</a>';
+				eventTicketingSystem::ticketEditScreen();
+			}
 		}	
 
 		//save edited ticket info
@@ -718,7 +746,7 @@ echo '</div>';
 	{
 		$o = get_option("eventTicketingSystem");
 		
-		if (wp_verify_nonce($_POST['attendeeNotificationNonce'], plugin_basename(__FILE__)))
+		if (isset($_POST['attendeeNotificationNonce'] && wp_verify_nonce($_POST['attendeeNotificationNonce'], plugin_basename(__FILE__)))
 		{
 			global $wpdb;
 			$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
@@ -1292,7 +1320,7 @@ echo '</div>';
 	{
 		//echo "<pre>";print_r($_REQUEST); echo "</pre>";
 		$o = get_option("eventTicketingSystem");
-		if (wp_verify_nonce($_POST['ticketOptionAddNonce'], plugin_basename(__FILE__)))
+		if (isset($_POST['ticketOptionAddNonce']) && wp_verify_nonce($_POST['ticketOptionAddNonce'], plugin_basename(__FILE__)))
 		{
 			$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 
@@ -1428,7 +1456,7 @@ echo '</div>';
 		//echo "<pre>";print_r($_REQUEST); echo "</pre>";
 		$o = get_option("eventTicketingSystem");
 
-		if (wp_verify_nonce($_POST['ticketOptionAddToTicketNonce'], plugin_basename(__FILE__)))
+		if (isset($_POST['ticketOptionAddToTicketNonce']) && wp_verify_nonce($_POST['ticketOptionAddToTicketNonce'], plugin_basename(__FILE__)))
 		{
 			if (is_numeric($_REQUEST["ticketId"]))
 			{
@@ -1447,7 +1475,7 @@ echo '</div>';
 			}
 		}
 
-		if (wp_verify_nonce($_POST['ticketEditNonce'], plugin_basename(__FILE__)))
+		if (isset($_POST['ticketEditNonce']) && wp_verify_nonce($_POST['ticketEditNonce'], plugin_basename(__FILE__)))
 		{
 			if ($_REQUEST["add"] == 1)
 			{
