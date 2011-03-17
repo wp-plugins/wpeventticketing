@@ -81,6 +81,9 @@ Not at this time.
 
 
 == Changelog ==
+= 1.2.2 =
+* Changed Paypal parameters such that customers without a Paypal account can still purchase tickets
+* Display Currency throughout the entire program is consistent
 
 = 1.2.1 =
 * Fixed Syntax error

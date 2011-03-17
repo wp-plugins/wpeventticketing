@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.2.1
+Version: 1.2.2
 Author URI: http://9seeds.com/
 */
 
@@ -156,34 +156,43 @@ class eventTicketingSystem
 			</div>';
 	}
 
-	function currencyFormat($num,$type)
+	function getCurrencySymbol()
 	{
-		if(!strlen($type))
+		$o = get_option("eventTicketingSystem");
+
+		if(!isset($o["paypalInfo"]["paypalCurrency"]) || !strlen($o["paypalInfo"]["paypalCurrency"]))
 			$type = 'USD';
 
 		switch($type)
 		{
 			case 'USD':
-				return '$'.number_format($num,2);
+				return '$';
 			break;
 			case 'AUD':
-				return 'A $'.number_format($num,2);
+				return 'A $';
 			break;
 			case 'CAD':
-				return 'C $'.number_format($num,2);
+				return 'C $';
 			break;
 			case 'EUR':
-				return '&euro;'.number_format($num,2);
+				return '&euro;';
 			break;
 			case 'GBP':
-				return '&pound;'.number_format($num,2);
+				return '&pound;';
 			break;
 			case 'JYP':
-				return '&yen;'.number_format($num,2);
+				return '&yen;';
 			break;
 			default:
-				return $type.' '.number_format($num,2);
+				return $type.' ';
 		}
+
+	}
+	function currencyFormat($num)
+	{
+		$symbol = eventTicketingSystem::getCurrencySymbol();
+
+		return $symbol.number_format($num,2);
 	}
 
 	function ticketDebug()
@@ -553,7 +562,7 @@ echo '</div>';
 		echo '<div id="ticket_editattendee" class="wrap">';
 		
 		//manualy create a ticket
-		if (wp_verify_nonce($_POST['manualCreatePackageNonce'], plugin_basename(__FILE__)) && is_numeric($_REQUEST["manualCreatePackageId"]) && isset($o["packageProtos"][$_REQUEST["manualCreatePackageId"]]))
+		if (isset($_POST['manualCreatePackageNonce']) && wp_verify_nonce($_POST['manualCreatePackageNonce'], plugin_basename(__FILE__)) && is_numeric($_REQUEST["manualCreatePackageId"]) && isset($o["packageProtos"][$_REQUEST["manualCreatePackageId"]]))
 		{
 			if(isset($_POST["manualCreateEmail"]) && !check_email_address($_POST["manualCreateEmail"]))
 			{
@@ -618,7 +627,7 @@ echo '</div>';
 			}
 		}
 		
-		if(!(is_numeric($_REQUEST["edit"]) || is_numeric($_REQUEST["manualCreatePackageId"])))
+		if(!((isset($_REQUEST["edit"]) && is_numeric($_REQUEST["edit"])) || (isset($_REQUEST["manualCreatePackageId"]) && is_numeric($_REQUEST["manualCreatePackageId"]))))
 		{
 			if(is_array($o["packageProtos"]))
 			{
@@ -641,6 +650,9 @@ echo '</div>';
 			}
 			
 			echo '<div id="icon-profile" class="icon32"></div><h2>Attendee List</h2>';
+
+			if(!isset($_REQUEST["attendeesort"]))
+				$_REQUEST["attendeesort"] = 'Sold Time';
 			eventTicketingSystem::generateAttendeeTable(urldecode($_REQUEST["attendeesort"]));
 		}
 		echo '</div>';
@@ -730,10 +742,10 @@ echo '</div>';
 			
 			$ordersummarymsg = "Order Placed\r\n";
 			
-			$ordersummarymsg .= $order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"],$o["paypalInfo"]["paypalCurrency"])."\r\n\r\n";
+			$ordersummarymsg .= $order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"])."\r\n\r\n";
 			foreach($order["items"] as $ord)
 			{
-				$ordersummarymsg .= $ord["quantity"].' X '.$ord["name"].' for '.eventTicketingSystem::currencyFormat($ord["price"],$o["paypalInfo"]["paypalCurrency"])." each\r\n";
+				$ordersummarymsg .= $ord["quantity"].' X '.$ord["name"].' for '.eventTicketingSystem::currencyFormat($ord["price"])." each\r\n";
 			}
 			$ordersummarymsg .= "\r\n";
 			wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", $ordersummarymsg, $headers);
@@ -858,7 +870,8 @@ echo '</div>';
         $packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
         if (is_array($packages))
         {
-            foreach ($packages as $k => $v)
+			$attendee = array();
+			foreach ($packages as $k => $v)
             {
                 $v = unserialize($v->option_value);
                 foreach ($v->tickets as $t)
@@ -880,6 +893,7 @@ echo '</div>';
 		$attendee = eventTicketingSystem::getAttendees();
 		if (is_array($attendee))
 		{
+			$tr = $th = array();
 			foreach ($attendee as $ticketType => $v)
 			{
 				foreach ($v as $ticket)
@@ -1185,11 +1199,11 @@ echo '</div>';
 				echo "<tr>";
 				echo '<td>' . $k . '</td>';
 				echo '<td>' . $v["count"] . '</td>';
-				echo '<td>' . eventTicketingSystem::currencyFormat($v["money"],$o["paypalInfo"]["paypalCurrency"]). '</td>';
+				echo '<td>' . eventTicketingSystem::currencyFormat($v["money"]). '</td>';
 				echo "</tr>";
 			}
 			$pTotal = $total;
-			echo '<tr><td><strong>Total Package Revenue</strong><br />(minus coupon discounts)</td><td>&nbsp;</td><td><strong>' . eventTicketingSystem::currencyFormat($pTotal,$o["paypalInfo"]["paypalCurrency"]). '</strong></td></tr>';
+			echo '<tr><td><strong>Total Package Revenue</strong><br />(minus coupon discounts)</td><td>&nbsp;</td><td><strong>' . eventTicketingSystem::currencyFormat($pTotal). '</strong></td></tr>';
 		}
 		echo "</tbody>";
 
@@ -1203,7 +1217,7 @@ echo '</div>';
 			echo "</tr>";
 			echo "</thead>";
 			echo "<tbody>";
-			echo '<tr><td><strong>Total Coupon Discounts</strong></td><td>&nbsp;</td><td><strong>' . eventTicketingSystem::currencyFormat($discounted,$o["paypalInfo"]["paypalCurrency"]) . '</strong></td></tr>';
+			echo '<tr><td><strong>Total Coupon Discounts</strong></td><td>&nbsp;</td><td><strong>' . eventTicketingSystem::currencyFormat($discounted) . '</strong></td></tr>';
 			echo "</tbody>";
 		}
 		echo "<thead>";
@@ -1610,7 +1624,7 @@ echo '</div>';
 		//echo "<pre>";print_r($_REQUEST); echo "</pre>";
 		$o = get_option("eventTicketingSystem");
 
-		if (wp_verify_nonce($_POST['ticketAddToPackageNonce'], plugin_basename(__FILE__)))
+		if (isset($_POST["ticketAddToPackageNonce"]) && wp_verify_nonce($_POST['ticketAddToPackageNonce'], plugin_basename(__FILE__)))
 		{
 			if (is_numeric($_REQUEST["packageId"]))
 			{
@@ -1630,7 +1644,7 @@ echo '</div>';
 			}
 		}
 
-		if (wp_verify_nonce($_POST['packageEditNonce'], plugin_basename(__FILE__)))
+		if (isset($_POST["packageEditNonce"]) && wp_verify_nonce($_POST['packageEditNonce'], plugin_basename(__FILE__)))
 		{
 			if ($_REQUEST["add"] == 1)
 			{
@@ -1719,18 +1733,18 @@ echo '</div>';
 		echo "<div id='ticket_holder_right'>";
 		echo '<form method="post" action="" name="ticketAddToPackage">
 		<input type="hidden" name="ticketAddToPackageNonce" id="ticketAddToPackageNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
-		<input type="hidden" name="packageId" value="' . $packageProto->packageId . '" />
+		<input type="hidden" name="packageId" value="' . (isset($packageProto->packageId) ? $packageProto->packageId : "") . '" />
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="del" value="" />
 		</form>';
 		echo '<form method="post" action="" name="packageEdit">
 		<input type="hidden" name="packageEditNonce" id="packageEditNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
-		<input type="hidden" name="update" value="' . $packageProto->packageId . '">
+		<input type="hidden" name="update" value="' . (isset($packageProto->packageId) ? $packageProto->packageId : "") . '">
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="edit" value="" />
 		<input type="hidden" name="activate" value="" />
 		<input type="hidden" name="del" value="" />';
-		if (is_array($o["ticketProtos"]) && is_numeric($packageProto->packageId))
+		if (is_array($o["ticketProtos"]) && isset($packageProto->packageId) && is_numeric($packageProto->packageId))
 		{
 			if (empty($packageProto->tickets))
 			{
@@ -1854,7 +1868,7 @@ echo '</div>';
 				echo "<tr>";
 				echo '<td>' . $v["couponCode"] . '</td>';
 				echo '<td>' . ($o["packageProtos"][$v["packageId"]] ? $o["packageProtos"][$v["packageId"]]->displayName() : "<span style=\"background-color:LightPink;\">Invalid Coupon</span>" ). '</td>';
-				echo '<td>'.($v["type"] == "flat" ? "$".$v["amt"] : $v["amt"]."%").'</td>';
+				echo '<td>'.($v["type"] == "flat" ? eventTicketingSystem::getCurrencySymbol().$v["amt"] : $v["amt"]."%").'</td>';
 				echo '<td>' . $v["uses"] . '</td>';
 				echo '<td>' . $v["used"] . '</td>';
 				echo '<td><a href="#" onclick="javascript:document.couponEdit.edit.value=\'' . $v["couponCode"] . '\'; document.couponEdit.submit();return false;">Edit</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:if (confirm(\'Are you sure you want to delete this coupon\')) {document.couponEdit.del.value=\'' . $v["couponCode"] . '\';document.couponEdit.submit();return false;}">Delete</a></td>';
@@ -2111,10 +2125,10 @@ echo '</div>';
 				wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
 				
 				$ordersummarymsg = "Order Placed\r\n";
-				$ordersummarymsg .= $order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"],$o["paypalInfo"]["paypalCurrency"])."\r\n\r\n";
+				$ordersummarymsg .= $order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"])."\r\n\r\n";
 				foreach($order["items"] as $ord)
 				{
-					$ordersummarymsg .= $ord["quantity"].' X '.$ord["name"].' for '.eventTicketingSystem::currencyFormat($ord["price"],$o["paypalInfo"]["paypalCurrency"])." each\r\n";
+					$ordersummarymsg .= $ord["quantity"].' X '.$ord["name"].' for '.eventTicketingSystem::currencyFormat($ord["price"])." each\r\n";
 				}
 				$ordersummarymsg .= "\r\n";
 				wp_mail($o["messages"]["messageEmailBcc"], "Event Order Placed", $ordersummarymsg, $headers);
@@ -2185,7 +2199,7 @@ echo '</div>';
 				{
 					echo '<tr>';
 					echo '<td><div class="packagename"><strong>' . $v->packageName . '</strong></div><div class="packagedescription">' . $v->packageDescription . '</div></td>';
-					echo '<td>'. (is_numeric($v->price) ? eventTicketingSystem::currencyFormat($v->price,$o["paypalInfo"]["paypalCurrency"]) : eventTicketingSystem::currencyFormat(0,$o["paypalInfo"]["paypalCurrency"])) . '</td>';
+					echo '<td>'. (is_numeric($v->price) ? eventTicketingSystem::currencyFormat($v->price) : eventTicketingSystem::currencyFormat(0)) . '</td>';
 					if ($o["displayPackageQuantity"])
 					{
 						echo '<td>' . $packageRemaining . ' left</td>';
@@ -2382,7 +2396,9 @@ echo '</div>';
 					             "RETURNURL" => $returnsite,
 					             "CANCELURL" => $returnsite,
 					             "PAYMENTREQUEST_0_PAYMENTACTION" => 'Sale',
-			 			         "PAYMENTREQUEST_0_CURRENCYCODE" => $p["paypalCurrency"],
+								 "PAYMENTREQUEST_0_CURRENCYCODE" => $p["paypalCurrency"],
+								 "SOLUTIONTYPE" => 'Sole',
+								 "LANDINGPAGE" => 'Billing'
 					);
 					foreach ($item as $k => $i)
 					{
@@ -2679,7 +2695,7 @@ class package
 		echo '<div>Start: <input type="text" name="packageExpireStart" id="expireStart" value="' . $this->expireStart . '"> End: <input type="text" name="packageExpireEnd" id="expireEnd" value="' . $this->expireEnd . '"></div>';
 		echo '</div>';
 		echo '<h2>Package Cost</h2>';
-		echo '<div>$<input type="text" name="packagePrice" value="' . $this->price . '" size="5"></div>';
+		echo '<div>'.eventTicketingSystem::getCurrencySymbol().'<input type="text" name="packagePrice" value="' . $this->price . '" size="5"></div>';
 		//echo '</div>';
 		echo '<h2>Package Quantity</h2>';
 		echo '<div>Quantity: <input type="text" name="packageQuantity" value="' . $this->packageQuantity . '" size="3"><br /><p style="font-style: italic;">How many of this package to sell? Leave blank for no limit</p></div>';
