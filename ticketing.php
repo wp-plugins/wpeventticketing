@@ -162,6 +162,8 @@ class eventTicketingSystem
 
 		if(!isset($o["paypalInfo"]["paypalCurrency"]) || !strlen($o["paypalInfo"]["paypalCurrency"]))
 			$type = 'USD';
+		else
+			$type = $o["paypalInfo"]["paypalCurrency"];
 
 		switch($type)
 		{
