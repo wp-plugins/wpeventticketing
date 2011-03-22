@@ -4,7 +4,7 @@ Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
 Tested up to: 3.1
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 
 Manage and sell ticket for an event.
 
@@ -81,6 +81,10 @@ Not at this time.
 
 
 == Changelog ==
+
+= 1.2.3 =
+* Bugfix display currency was previously consistently off everywhere, now fixed
+
 = 1.2.2 =
 * Changed Paypal parameters such that customers without a Paypal account can still purchase tickets
 * Display Currency throughout the entire program is consistent
