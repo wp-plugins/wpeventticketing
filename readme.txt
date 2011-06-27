@@ -3,8 +3,8 @@ Contributors: toddhuish, vegasgeek, stastic
 Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
-Tested up to: 3.1
-Stable tag: 1.2.3
+Tested up to: 3.1.3
+Stable tag: 1.2.4
 
 Manage and sell ticket for an event.
 
@@ -81,6 +81,8 @@ Not at this time.
 
 
 == Changelog ==
+= 1.2.4 =
+* Duplicate calls to getAttendees() was causing exessive memory usage.
 
 = 1.2.3 =
 * Bugfix display currency was previously consistently off everywhere, now fixed
