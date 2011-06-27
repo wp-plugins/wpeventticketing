@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.2.3
+Version: 1.2.4
 Author URI: http://9seeds.com/
 */
 
@@ -945,19 +945,15 @@ echo '</div>';
 		extract(shortcode_atts(array(
 			'sort' => 'Sold Time',
 		), $atts));
-	
-		ob_start();
-	
-		$o = get_option("eventTicketingSystem");
 
-		$attendee = eventTicketingSystem::getAttendees();
-		$tmp = eventTicketingSystem::getAttendeeArr();
+		// Get attendee data
+		if ( $tmp = eventTicketingSystem::getAttendeeArr() ) {
+
+			ob_start();
+
+			$tr = $tmp["tr"];
+			$th = $tmp["th"];
 		
-		$tr = $tmp["tr"];
-		$th = $tmp["th"];
-		
-		if (is_array($attendee))
-		{
 			$cmp = new arbitrarySort($sort);
 			foreach($tr as $k => $v)
 			{
@@ -980,9 +976,13 @@ echo '</div>';
 					}
 				}
 			}
+
+			return ob_get_clean();
+
+		// No results
+		} else {
+			return '';
 		}
-		
-		return ob_get_clean();
 	}
 
 
@@ -993,15 +993,13 @@ echo '</div>';
 		{
 			$sort = 'Sold Time';
 		}
-		
-		$attendee = eventTicketingSystem::getAttendees();
-		$tmp = eventTicketingSystem::getAttendeeArr();
-		
-		$tr = $tmp["tr"];
-		$th = $tmp["th"];
 
-		if (is_array($attendee))
+		// Get attendee data
+		if ( $tmp = eventTicketingSystem::getAttendeeArr() )
 		{
+			$tr = $tmp["tr"];
+			$th = $tmp["th"];
+
 			/*
 			foreach ($attendee as $ticketType => $v)
 			{
