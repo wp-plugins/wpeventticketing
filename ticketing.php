@@ -788,7 +788,7 @@ echo '</div>';
 							$bccList[$v->orderDetails["email"]] = $v->orderDetails["email"];
 						}
 					}
-					*/
+					 */
 					foreach ($v->tickets as $t)
 					{
 						if(
@@ -986,11 +986,13 @@ echo '</div>';
 		
 		extract(shortcode_atts(array(
 			'sort' => 'Sold Time',
+			'exclude'=>''
 		), $atts));
+
+		$exclude = explode(',',$exclude);
 
 		// Get attendee data
 		if ( $tmp = eventTicketingSystem::getAttendeeArr() ) {
-
 			ob_start();
 
 			$tr = $tmp["tr"];
@@ -1007,7 +1009,7 @@ echo '</div>';
 				$c = 0;
 				foreach ($tr[$k] as $data)
 				{
-					if($data["final"])
+					if($data["final"] && !in_array($k,$exclude))
 					{
 						$c++;
 						echo '<div class="event-attendee '.($c % 2 == 0 ? "even" : "odd").'">';
