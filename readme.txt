@@ -3,7 +3,7 @@ Contributors: toddhuish, vegasgeek, stastic
 Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
-Tested up to: 3.2
+Tested up to: 3.2.1
 Stable tag: 1.3
 
 Manage and sell ticket for an event.
