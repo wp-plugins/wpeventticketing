@@ -770,6 +770,7 @@ echo '</div>';
 		{
 			global $wpdb;
 			$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
+			//echo '<pre>'.print_r($packages,true).'</pre>';exit;
 			$bccList = array();
 			if (is_array($packages))
 			{
@@ -1009,7 +1010,7 @@ echo '</div>';
 				$c = 0;
 				foreach ($tr[$k] as $data)
 				{
-					if($data["final"] && !in_array($k,$exclude))
+					if($data["final"] && !in_array($k,$exclude) && !in_array($data['Package Type'],$exclude))
 					{
 						$c++;
 						echo '<div class="event-attendee '.($c % 2 == 0 ? "even" : "odd").'">';
@@ -1347,7 +1348,15 @@ echo '</div>';
 				echo '<tbody>';
 				foreach($tr as $to)
 				{
-					$summary[$to[$s]]++;
+					if(is_array($to[$s]))
+					{
+						foreach($to[$s] as $index)
+							$summary[$index]++;
+					}
+					else
+					{
+						$summary[$to[$s]]++;
+					}
 				}
 				ksort($summary);
 				foreach($summary as $op => $count)
