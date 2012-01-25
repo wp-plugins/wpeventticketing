@@ -6,7 +6,7 @@ Requires at least: 2.8
 Tested up to: 3.3.1
 Stable tag: 1.3.1
 
-Manage and sell ticket for an event.
+Manage and sell tickets for an event.
 
 == Description ==
 
