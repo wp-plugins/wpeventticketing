@@ -701,7 +701,7 @@ echo '</div>';
 			$ticketHash = md5(microtime() . $t->ticketId);
 			$ticket = clone $o["ticketProtos"][$t->ticketId];
 			$ticket->setTicketid($ticketHash);
-			$ticket->setSoldTime(time());
+			$ticket->setSoldTime(current_time('timestamp'));
 
 			//echo '<pre>'.print_r($ticket,true).'</pre>';
 			foreach($ticket->ticketOptions as $tk => $tv)
@@ -825,7 +825,7 @@ echo '</div>';
 
 			wp_mail($o["messages"]["messageEmailFromEmail"], $subj , $note , $headers);
 
-			$msg = array("date"=>date("m/d/Y H:i:s"),"subj"=>$subj,"body"=>$note);
+			$msg = array("date"=>date_i18n("m/d/Y H:i:s"),"subj"=>$subj,"body"=>$note);
 
 			$o["messages"]["sentMessages"][] = $msg;
 
@@ -949,7 +949,7 @@ echo '</div>';
 					$th[$ticketType]['Package Type'] = 'Package Type';
 					$th[$ticketType]['Coupon'] = 'Coupon';
 
-					$trtmp['Sold Time'] = date("m/d/Y H:i:s",$ticket->soldTime);
+					$trtmp['Sold Time'] = date_i18n("m/d/Y H:i:s",$ticket->soldTime);
 					if(is_array($ticket->orderDetails["coupon"]))
 					{
 						$trtmp['Package Type'] = $o["packageProtos"][$ticket->orderDetails["coupon"]["packageId"]]->packageName;
@@ -1314,7 +1314,7 @@ echo '</div>';
 					$trtmp = array();
 					//populate the soldtime stuff in the display array
 					$th[$ticketType]['Sold Time'] = 'Sold Time';
-					$trtmp['Sold Time'] = date("m/d/Y H:i:s",$ticket->soldTime);
+					$trtmp['Sold Time'] = date_i18n("m/d/Y H:i:s",$ticket->soldTime);
 
 					foreach ($ticket->ticketOptions as $to)
 					{
@@ -2117,7 +2117,7 @@ echo '</div>';
 							$ticketHash = md5(microtime() . $t->ticketId);
 							$ticket = clone $o["ticketProtos"][$t->ticketId];
 							$ticket->setTicketid($ticketHash);
-							$ticket->setSoldTime(time());
+							$ticket->setSoldTime(current_time('timestamp'));
 
 							$n = explode(' ',$order["name"],2);
 
@@ -2375,7 +2375,7 @@ echo '</div>';
 						$package->price = $package->price*(1-($coupon["amt"]/100));
 					}
 					$package->packageDescription = '**discounted** '.$package->packageDescription;
-					$package->setExpire(array("start"=>date("m/d/Y",strtotime("-1 days")),"end"=>date("m/d/Y",strtotime("+1 days"))));
+					$package->setExpire(array("start"=>date_i18n("m/d/Y",strtotime("-1 days")),"end"=>date_i18n("m/d/Y",strtotime("+1 days"))));
 					//set package id to something unlikely to happen in normal operation
 					$package->setPackageId(424242);
 					$package->setPackageQuantity(1);
