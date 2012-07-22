@@ -1,27 +1,25 @@
 === WP Event Ticketing ===
-Contributors: toddhuish, vegasgeek, stastic
+Contributors: toddhuish, vegasgeek, stastic, jrfoell
 Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
-Tested up to: 3.3.1
-Stable tag: 1.3.2
+Tested up to: 3.4.1
+Stable tag: 1.3.3
+License: GPLv2 or later
 
 Manage and sell ticket for an event.
 
 == Description ==
 
-The WPEventTicketing plugin makes it easy to sell tickets to an event directly from your
-WordPress website.
+The WPEventTicketing plugin makes it easy to sell tickets to an event directly from your WordPress website.
 
 Contains the following features:
 
 * Collect payments via paypal.
 * Set total attendance limit.
 * Multiple ticket types. For example, ticket type A includes a t-shirt while ticket type B does not.
-* Custom ticket options. This allows you to decide what information you want ticket purchasers to
-provide. For example, name, address, shirt size, twitter handle, etc...
-* Create ticket packages. For example, early bird specials. Ticket packages can be used to give
-a discount to people who place their order during a certain time.
+* Custom ticket options. This allows you to decide what information you want ticket purchasers to provide. For example, name, address, shirt size, twitter handle, etc...
+* Create ticket packages. For example, early bird specials. Ticket packages can be used to give a discount to people who place their order during a certain time.
 * Create coupons to give discounts to individuals.
 * Send email to purchaser upon order completion.
 * Reporting page shows total sales and income broken down by package, coupons used and tickets sold.
@@ -66,9 +64,31 @@ View a <a href="http://vimeo.com/18491170">walk-through video</a> that explains 
 
 == Frequently Asked Questions ==
 
+= How come my tickets aren't showing up for sale on the site? =
+
+The issue is almost always one of 3 things. <a href="https://vimeo.com/29543852">Watch this video</a> and it will explain all 3 scenarios.
+
+= Can I remove the coupon field from the registration page? =
+
+The easiest way to remove the coupon field is to hide it with the following CSS:
+`.coupon {
+display: none;
+}`
+
+= The data entry fields are showing white text in the form fields. How do I fix that? =
+This typically happens when you are using a theme with a dark background and white text. The theme designer didn't add a style to force the input fields to use a dark font. You can add the following code to your style.css file:
+`#eventTicketing ul.ticketPurchaseInfo li input, 
+#eventTicketing tr.coupon input[name="couponCode"] {
+color: #000!important;
+}`
+
+= Does the plugin create printable tickets? =
+
+Not at this time. But, that's a feature we plan to add in the future.
+
 = Can I run multiple events at one time? =
 
-Not at this time.
+Not at this time. But, that's a feature we plan to add in the future.
 
 == Screenshots ==
 
@@ -81,6 +101,11 @@ Not at this time.
 
 
 == Changelog ==
+= 1.3.3 =
+* Update link for Paypal instructions
+* Add new FAQs
+* Removed extra closing div that was breaking instructions page
+
 = 1.3.2 =
 * Fix date calculation bug for ticket sold times
 
@@ -93,7 +118,7 @@ Not at this time.
 * Add exclusion rules to attendee page shortcode
 
 = 1.2.4 =
-* Duplicate calls to getAttendees() was causing exessive memory usage.
+* Duplicate calls to getAttendees() was causing excessive memory usage.
 
 = 1.2.3 =
 * Bugfix display currency was previously consistently off everywhere, now fixed

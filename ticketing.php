@@ -89,7 +89,7 @@ class eventTicketingSystem
 		echo '<div class="wrap">';
 		echo '<div id="icon-options-general" class="icon32"></div><h2>'.__('Instructions').'</h2>';
 		echo '<h3>'.__('Step 1').'</h3>';
-		echo '<p>'.__('Before you can use the ticketing system for the first time, you need to <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO" target="_blank">follow these instructions at Paypal</a> to get your API signature. You\'ll need that information in step 2.').'</p>';
+		echo '<p>'.__('Before you can use the ticketing system for the first time, you need to <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_ECAPICredentials" target="_blank">follow these instructions at Paypal</a> to get your API signature. You\'ll need that information in step 2.').'</p>';
 			
 		echo '<h3>'.__('Step 2').'</h3>';
 		echo '<p>'.__('Update the <a href="admin.php?page=ticketsettings">Settings</a> page with your default event settings.').'</p>';
@@ -145,15 +145,14 @@ class eventTicketingSystem
     height: 48px;
 }</pre>';
 
-		echo '<p><hr></p>';
-		echo '<h3>'.__('Looking for more features?').'</h3>';
-		echo '<p>'.__('We are currently hard at work on <strong>Event Ticketing Pro</strong>. Sign up for our <a href="http://eepurl.com/brgsD" target="_blank">newsletter</a> to be notified when the pro version is released.').'</p>';
+//		echo '<p><hr></p>';
+//		echo '<h3>'.__('Looking for more features?').'</h3>';
+//		echo '<p>'.__('We are currently hard at work on <strong>Event Ticketing Pro</strong>. Sign up for our <a href="http://eepurl.com/brgsD" target="_blank">newsletter</a> to be notified when the pro version is released.').'</p>';
 
 		echo '<p>'.__('We hope you like the plugin. If you have any questions, feel free to <a href="http://9seeds.com/contact/" target="_blank">contact us</a>.').'</p>';
 
 
-		echo '</div>
-			</div>';
+		echo '</div>';
 	}
 
 	function getCurrencySymbol()
