@@ -4,9 +4,14 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.3.2
+Version: 1.4.0
 Author URI: http://9seeds.com/
 */
+
+define( 'WP_EVENT_TICKETING_BASE_NAME', plugin_basename( dirname( __FILE__ ) ) );
+define( 'WP_EVENT_TICKETING_BASE_DIR', WP_PLUGIN_DIR . '/' . WP_EVENT_TICKETING_BASE_NAME . '/' );
+define( 'WP_EVENT_TICKETING_LIB_DIR', WP_EVENT_TICKETING_BASE_DIR . 'lib/' );
+define( 'WP_EVENT_TICKETING_URL', WP_PLUGIN_URL . '/' . WP_EVENT_TICKETING_BASE_NAME . '/' );
 
 register_activation_hook(__FILE__, array("eventTicketingSystem", "activate"));
 add_action('admin_init', array("eventTicketingSystem", "adminscripts"));
@@ -30,7 +35,7 @@ class eventTicketingSystem
 		//Set up default options
 		if (!get_option("eventTicketingSystem"))
 		{
-			$data = unserialize(file_get_contents(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/defaults.ser'));
+			$data = unserialize( file_get_contents( WP_EVENT_TICKETING_BASE_DIR . 'defaults.ser' ) );
 			add_option("eventTicketingSystem", $data);
 		}
 		
@@ -44,7 +49,7 @@ class eventTicketingSystem
 	function adminscripts()
 	{
 		//look for export button being clicked, export attendee list as csv
-		if(isset($_POST['exportAttendeeNonce']) && wp_verify_nonce($_POST['exportAttendeeNonce'], plugin_basename(__FILE__)) && strlen($_REQUEST["attendeeCsv"]))
+		if ( isset( $_POST['exportAttendeeNonce'] ) && wp_verify_nonce( $_POST['exportAttendeeNonce'], WP_EVENT_TICKETING_BASE_NAME ) && strlen($_REQUEST["attendeeCsv"] ) )
 		{
 			header("Content-type: text/csv");
 			header("Content-Disposition: attachment;filename=attendee_export.csv");
@@ -52,22 +57,20 @@ class eventTicketingSystem
 			exit;
 		}
 
-		$pluginurl = WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__));
-		wp_enqueue_script('eventticketingscript', $pluginurl . '/js/ticketing.js', array('jquery'));
-		wp_enqueue_script('datepicker', $pluginurl . '/js/jquery.ui.datepicker.js', array('eventticketingscript', 'jquery-ui-core'));
-		wp_enqueue_style('datepickercss', $pluginurl . '/css/ui.all.css');
+		wp_enqueue_script('eventticketingscript', WP_EVENT_TICKETING_URL . 'js/ticketing.js', array('jquery'));
+		wp_enqueue_script('datepicker', WP_EVENT_TICKETING_URL . 'js/jquery.ui.datepicker.js', array('eventticketingscript', 'jquery-ui-core'));
+		wp_enqueue_style('datepickercss', WP_EVENT_TICKETING_URL . 'css/ui.all.css');
 	}
 
 	function frontendscripts()
 	{
-		$pluginurl = WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__));
-		wp_enqueue_style('eventticketingstyle', $pluginurl . '/css/ticketing.css');
+		wp_enqueue_style('eventticketingstyle', WP_EVENT_TICKETING_URL . 'css/ticketing.css');
 	}
 
 	function options()
 	{
 		//echo '<pre>'.print_r($menu,true).'</pre>';
-		add_object_page('Tickets', 'Tickets', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/images/calendar_full.png');
+		add_object_page('Tickets', 'Tickets', 'activate_plugins', 'eventticketing', array("eventTicketingSystem", "ticketReporting"), WP_EVENT_TICKETING_URL . 'images/calendar_full.png');
 		add_submenu_page('eventticketing', 'Reporting', 'Reporting', 'activate_plugins', 'eventticketing', array('eventTicketingSystem', 'ticketReporting'));
 		add_submenu_page('eventticketing', 'Ticket Options', 'Ticket Options', 'activate_plugins', 'ticketoptions', array('eventTicketingSystem', 'ticketOptionsControl'));
 		add_submenu_page('eventticketing', 'Tickets', 'Tickets', 'activate_plugins', 'tickettickets', array('eventTicketingSystem', 'ticketTicketsControl'));
@@ -210,7 +213,7 @@ class eventTicketingSystem
 			}
 		}	
 		 */	
-		if (wp_verify_nonce($_POST['ticketDebugVerifyIntegrityNonce'], plugin_basename(__FILE__)))
+		if ( wp_verify_nonce( $_POST['ticketDebugVerifyIntegrityNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			$packages = eventTicketingSystem::getPackages();
 			if (is_array($packages))
@@ -243,7 +246,7 @@ class eventTicketingSystem
 		echo '<div class="wrap">';
 		echo '<div id="icon-tools" class="icon32"></div><h2>Integrity Check</h2>';
 		echo '<form name="ticketDebugVerify" action="" method="post">';
-		echo '<input type="hidden" name="ticketDebugVerifyIntegrityNonce" id="ticketDebugVerifyIntegrityNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<input type="hidden" name="ticketDebugVerifyIntegrityNonce" id="ticketDebugVerifyIntegrityNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />';
 		echo '<div><input type="submit" class="button-primary" value="Check Integrity" /></div><div class="instructional">Check integrity of tickets and packages and search for orphans. <strong>IF THERE ARE ORPHANS THEY WILL BE DELETED. PLEASE GET A BACKUP OF YOUR DATABASE BEFORE CLICKING THIS BUTTON!</strong></div><br /><br />';
 		echo '</form>';
 		/*
@@ -280,7 +283,7 @@ class eventTicketingSystem
 		/*
 		 * PAYPAL SETTINGS
 		 */
-		if (isset($_POST['ticketPaypalNonce']) && wp_verify_nonce($_POST['ticketPaypalNonce'], plugin_basename(__FILE__)))
+		if ( isset($_POST['ticketPaypalNonce'] ) && wp_verify_nonce( $_POST['ticketPaypalNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			$o["paypalInfo"] = array(
 				"paypalAPIUser" => trim($_REQUEST["paypalAPIUser"]),
@@ -295,7 +298,7 @@ class eventTicketingSystem
 
 		echo '<div id="icon-users" class="icon32"></div><h2>Paypal Settings</h2>';
 		echo '<form method="post" action="">
-			<input type="hidden" name="ticketPaypalNonce" id="ticketPaypalNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+			<input type="hidden" name="ticketPaypalNonce" id="ticketPaypalNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 
 			<table class="form-table">			
 			<tr valign="top" id="tags">
@@ -366,7 +369,7 @@ class eventTicketingSystem
 		/*
 		 * Messages
 		 */	
-		if (isset($_POST['ticketMessagesNonce']) && wp_verify_nonce($_POST['ticketMessagesNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['ticketMessagesNonce'] ) && wp_verify_nonce( $_POST['ticketMessagesNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			$o["messages"] = array(
 				"messageEventName" => trim(stripslashes($_REQUEST["messageEventName"])),
@@ -383,7 +386,7 @@ class eventTicketingSystem
 		echo '<div class="settings_page">';
 		echo '<div id="icon-users" class="icon32"></div><h2>Static Pages</h2>';
 		//echo '<form method="post" action="">
-		echo '<input type="hidden" name="ticketMessagesNonce" id="ticketMessagesNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+		echo '<input type="hidden" name="ticketMessagesNonce" id="ticketMessagesNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 			<table class="form-table">			
 			<tr valign="top">
 				<th scope="row"><label for="messageThankYou">Thank You Page:</label><br /><br ><em>Note: You must put the shortcode [ticketlinks] in this thank you page to have the links to the purchased tickets show up</em></th>
@@ -443,9 +446,9 @@ class eventTicketingSystem
 		echo '<div class="settings_page">';
 		echo '<div id="icon-users" class="icon32"></div><h2>Event Attendance Maximum</h2>';
 		//echo '<form method="post" action="" name="eventAttendance">
-		echo '<input type="hidden" name="eventAttendanceNonce" id="eventAttendanceNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<input type="hidden" name="eventAttendanceNonce" id="eventAttendanceNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />';
 		//<input type="hidden" name="edit" value="" />';
-		if (isset($_POST['eventAttendanceNonce']) && wp_verify_nonce($_POST['eventAttendanceNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['eventAttendanceNonce'] ) && wp_verify_nonce( $_POST['eventAttendanceNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			if (is_numeric($_REQUEST["eventAttendanceMax"]))
 			{
@@ -483,7 +486,7 @@ class eventTicketingSystem
 		 */
 		//Start/Stop/Reset Event Screen
 		echo '<div class="settings_page">';
-		if (isset($_POST['eventManipulationNonce']) && wp_verify_nonce($_POST['eventManipulationNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['eventManipulationNonce'] ) && wp_verify_nonce( $_POST['eventManipulationNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			if($_REQUEST['eventStatusSwitch'] == 1)
 			{
@@ -517,7 +520,7 @@ class eventTicketingSystem
 					}
 					if($_REQUEST["eventResetOptions"] == 4)
 					{
-						$o = unserialize(file_get_contents(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/defaults.ser'));
+						$o = unserialize( file_get_contents( WP_EVENT_TICKETING_BASE_DIR . 'defaults.ser' ) );
 						update_option("eventTicketingSystem", $o);
 					}
 				}
@@ -534,7 +537,7 @@ class eventTicketingSystem
 		echo '<form name="eventManipulationForm" action="" method="post">';
 		echo '<input type="hidden" name="eventReset" value="">';
 		echo '<input type="hidden" name="eventStatusSwitch" value="">';
-		echo '<input type="hidden" name="eventManipulationNonce" id="eventManipulationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<input type="hidden" name="eventManipulationNonce" id="eventManipulationNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />';
 		echo '<table class="widefat">';
 		echo '<tbody>';
 		echo '<tr><td>Turn registration on and off with this button. Registration is currently <strong>'.($o['eventTicketingStatus'] ? 'On' : 'Off').'</strong><br /><br /><input class="button-primary" type="button" value="Start/Stop Registration" onClick="javascript:document.eventManipulationForm.eventStatusSwitch.value=\'1\';document.eventManipulationForm.submit(); return false;"></td></tr>';
@@ -564,12 +567,16 @@ echo '</div>';
 
 	function ticketAttendeeEdit()
 	{
+		require_once WP_EVENT_TICKETING_LIB_DIR . 'package.php';
 		$o = get_option("eventTicketingSystem");
 		
 		echo '<div id="ticket_editattendee" class="wrap">';
 		
 		//manualy create a ticket
-		if (isset($_POST['manualCreatePackageNonce']) && wp_verify_nonce($_POST['manualCreatePackageNonce'], plugin_basename(__FILE__)) && is_numeric($_REQUEST["manualCreatePackageId"]) && isset($o["packageProtos"][$_REQUEST["manualCreatePackageId"]]))
+		if ( isset( $_POST['manualCreatePackageNonce'] ) 
+		  && wp_verify_nonce( $_POST['manualCreatePackageNonce'], WP_EVENT_TICKETING_BASE_NAME ) 
+		  && is_numeric( $_REQUEST["manualCreatePackageId"] ) 
+		  && isset( $o["packageProtos"][$_REQUEST["manualCreatePackageId"]] ) )
 		{
 			if(isset($_POST["manualCreateEmail"]) && !check_email_address($_POST["manualCreateEmail"]))
 			{
@@ -593,13 +600,13 @@ echo '</div>';
 		}	
 
 		//save edited ticket info
-		if (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32 && wp_verify_nonce($_POST['ticketInformationNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_REQUEST["tickethash"] ) && strlen( $_REQUEST["tickethash"] ) == 32 && wp_verify_nonce( $_POST['ticketInformationNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			eventTicketingSystem::ticketEditScreen();
 		}
 
 		//edit or delete an existing ticket
-		if (isset($_REQUEST["tickethash"]) && strlen($_REQUEST["tickethash"]) == 32 && wp_verify_nonce($_POST['attendeeEditNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_REQUEST["tickethash"] ) && strlen( $_REQUEST["tickethash"] ) == 32 && wp_verify_nonce( $_POST['attendeeEditNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			if(isset($_REQUEST["edit"]) && is_numeric($_REQUEST["edit"]) && $_REQUEST["edit"] == 1)
 			{
@@ -640,7 +647,7 @@ echo '</div>';
 			{
 				echo '<div id="icon-users" class="icon32"></div><h2>Create Manual Ticket</h2>';
 				echo '<form method="post" action="">';
-				echo '<input type="hidden" name="manualCreatePackageNonce" id="manualCreatePackageNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+				echo '<input type="hidden" name="manualCreatePackageNonce" id="manualCreatePackageNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />';
 				echo '<table>';
 				echo '<tr><td>Package Type:</td><td><select name="manualCreatePackageId" id="manualCreatePackageId">';
 				foreach($o["packageProtos"] as $p)
@@ -763,9 +770,10 @@ echo '</div>';
 	
 	function ticketNotify()
 	{
+		require_once WP_EVENT_TICKETING_LIB_DIR . 'package.php';
 		$o = get_option("eventTicketingSystem");
 		
-		if (isset($_POST['attendeeNotificationNonce']) && wp_verify_nonce($_POST['attendeeNotificationNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['attendeeNotificationNonce'] ) && wp_verify_nonce( $_POST['attendeeNotificationNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			global $wpdb;
 			$packages = $wpdb->get_results("select option_value from {$wpdb->options} where option_name like 'package_%'");
@@ -839,7 +847,7 @@ echo '</div>';
 		echo '<div id="icon-users" class="icon32"></div><h2>Send Notification to All Attendees</h2>';
 		echo '<table class="form-table">';
 		echo '<form action="" method="post">';
-		echo '<input type="hidden" name="attendeeNotificationNonce" id="attendeeNotificationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		echo '<input type="hidden" name="attendeeNotificationNonce" id="attendeeNotificationNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />';
 
 		echo '<tr valign="top">';
 		echo '<th scope="row"><label for="attendeeSubject">To:</label></th>';
@@ -993,6 +1001,7 @@ echo '</div>';
 
 		// Get attendee data
 		if ( $tmp = eventTicketingSystem::getAttendeeArr() ) {
+			require_once WP_EVENT_TICKETING_LIB_DIR . 'arbitrary_sort.php';
 			ob_start();
 
 			$tr = $tmp["tr"];
@@ -1041,6 +1050,7 @@ echo '</div>';
 		// Get attendee data
 		if ( $tmp = eventTicketingSystem::getAttendeeArr() )
 		{
+			require_once WP_EVENT_TICKETING_LIB_DIR . 'arbitrary_sort.php';
 			$tr = $tmp["tr"];
 			$th = $tmp["th"];
 
@@ -1087,7 +1097,7 @@ echo '</div>';
 			}
 			
 			echo '<form method="post" action="'.admin_url("admin.php?page=ticketattendeeedit").'" name="attendeeEdit">
-			<input type="hidden" name="attendeeEditNonce" id="attendeeEditNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+			<input type="hidden" name="attendeeEditNonce" id="attendeeEditNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 			<input type="hidden" name="del" value="" />
 			<input type="hidden" name="edit" value="" />
 			<input type="hidden" name="tickethash" value="" />
@@ -1170,7 +1180,7 @@ echo '</div>';
 				}
 				echo '<tr><td colspan="'.count($headerkey).'">';
 				echo '<form action="" method="post">
-            	<input type="hidden" name="exportAttendeeNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+            	<input type="hidden" name="exportAttendeeNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 				<input type="hidden" name="attendeeCsv" value="'.base64_encode($csv).'" />
 				<input type="submit" class="button-primary" name="submit" value="Export Attendee List" />
 				</form>';
@@ -1385,9 +1395,10 @@ echo '</div>';
 
 	function ticketOptionsControl()
 	{
+		require_once WP_EVENT_TICKETING_LIB_DIR . 'ticket_option.php';
 		//echo "<pre>";print_r($_REQUEST); echo "</pre>";
 		$o = get_option("eventTicketingSystem");
-		if (isset($_POST['ticketOptionAddNonce']) && wp_verify_nonce($_POST['ticketOptionAddNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['ticketOptionAddNonce'] ) && wp_verify_nonce( $_POST['ticketOptionAddNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 
@@ -1422,6 +1433,7 @@ echo '</div>';
 				$o["ticketOptions"][$nextId]->setOptionId($nextId);
 				update_option("eventTicketingSystem", $o);
 				echo '<div id="message" class="updated"><p>Option saved</p></div>';
+
 
 				$ticketOption = new ticketOption();
 			}
@@ -1460,7 +1472,7 @@ echo '</div>';
 
 		echo "<div id='ticket_new_options'>";
 		echo '<form method="post" action="" name="ticketOptionAdd">
-            <input type="hidden" name="ticketOptionAddNonce" id="ticketOptionAddNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+            <input type="hidden" name="ticketOptionAddNonce" id="ticketOptionAddNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 			<input type="hidden" name="del" value="" />
 			<input type="hidden" name="edit" value="" />
 			<input type="hidden" name="update" value="' . $ticketOption->optionId . '" />
@@ -1520,10 +1532,11 @@ echo '</div>';
 
 	function ticketTicketsControl()
 	{
+		require_once WP_EVENT_TICKETING_LIB_DIR . 'ticket.php';
 		//echo "<pre>";print_r($_REQUEST); echo "</pre>";
 		$o = get_option("eventTicketingSystem");
 
-		if (isset($_POST['ticketOptionAddToTicketNonce']) && wp_verify_nonce($_POST['ticketOptionAddToTicketNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['ticketOptionAddToTicketNonce'] ) && wp_verify_nonce( $_POST['ticketOptionAddToTicketNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			if (is_numeric($_REQUEST["ticketId"]))
 			{
@@ -1542,7 +1555,7 @@ echo '</div>';
 			}
 		}
 
-		if (isset($_POST['ticketEditNonce']) && wp_verify_nonce($_POST['ticketEditNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['ticketEditNonce'] ) && wp_verify_nonce( $_POST['ticketEditNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			if ($_REQUEST["add"] == 1)
 			{
@@ -1622,13 +1635,13 @@ echo '</div>';
 		echo "</div></div>";
 		echo "<div id='ticket_holder_right'>";
 		echo '<form method="post" action="" name="ticketOptionAddToTicket">
-		<input type="hidden" name="ticketOptionAddToTicketNonce" id="ticketOptionAddToTicketNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+		<input type="hidden" name="ticketOptionAddToTicketNonce" id="ticketOptionAddToTicketNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 		<input type="hidden" name="ticketId" value="' . $ticketProto->ticketId . '" />
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="del" value="" />
 		</form>';
 		echo '<form method="post" action="" name="ticketEdit">
-		<input type="hidden" name="ticketEditNonce" id="ticketEditNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+		<input type="hidden" name="ticketEditNonce" id="ticketEditNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 		<input type="hidden" name="update" value="' . $ticketProto->ticketId . '">
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="edit" value="" />
@@ -1674,10 +1687,11 @@ echo '</div>';
 
 	function ticketPackagesControl()
 	{
+		require_once WP_EVENT_TICKETING_LIB_DIR . 'package.php';
 		//echo "<pre>";print_r($_REQUEST); echo "</pre>";
 		$o = get_option("eventTicketingSystem");
 
-		if (isset($_POST["ticketAddToPackageNonce"]) && wp_verify_nonce($_POST['ticketAddToPackageNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST["ticketAddToPackageNonce"] ) && wp_verify_nonce( $_POST['ticketAddToPackageNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			if (is_numeric($_REQUEST["packageId"]))
 			{
@@ -1697,7 +1711,7 @@ echo '</div>';
 			}
 		}
 
-		if (isset($_POST["packageEditNonce"]) && wp_verify_nonce($_POST['packageEditNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST["packageEditNonce"] ) && wp_verify_nonce( $_POST['packageEditNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			if ($_REQUEST["add"] == 1)
 			{
@@ -1785,13 +1799,13 @@ echo '</div>';
 		echo "</div></div>";
 		echo "<div id='ticket_holder_right'>";
 		echo '<form method="post" action="" name="ticketAddToPackage">
-		<input type="hidden" name="ticketAddToPackageNonce" id="ticketAddToPackageNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+		<input type="hidden" name="ticketAddToPackageNonce" id="ticketAddToPackageNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 		<input type="hidden" name="packageId" value="' . (isset($packageProto->packageId) ? $packageProto->packageId : "") . '" />
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="del" value="" />
 		</form>';
 		echo '<form method="post" action="" name="packageEdit">
-		<input type="hidden" name="packageEditNonce" id="packageEditNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+		<input type="hidden" name="packageEditNonce" id="packageEditNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 		<input type="hidden" name="update" value="' . (isset($packageProto->packageId) ? $packageProto->packageId : "") . '">
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="edit" value="" />
@@ -1853,7 +1867,7 @@ echo '</div>';
 	{
 		$o = get_option("eventTicketingSystem");
 
-		if (isset($_POST['couponEditNonce']) && wp_verify_nonce($_POST['couponEditNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['couponEditNonce'] ) && wp_verify_nonce( $_POST['couponEditNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			//echo '<pre>'.print_r($_REQUEST,true).'</pre>';
 			if(isset($_REQUEST["coupon"]) && is_array($_REQUEST["coupon"]))
@@ -1935,7 +1949,7 @@ echo '</div>';
 		echo "</div>";
 		echo "<div id='ticket_holder_right'>";
 		echo '<form method="post" action="" name="couponEdit">
-		<input type="hidden" name="couponEditNonce" id="couponEditNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />
+		<input type="hidden" name="couponEditNonce" id="couponEditNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />
 		<input type="hidden" name="add" value="" />
 		<input type="hidden" name="edit" value="" />
 		<input type="hidden" name="del" value="" />';
@@ -2012,7 +2026,8 @@ echo '</div>';
 
 		//return redirect from paypal
 		//token=EC-4DR89227KU882313S&PayerID=5SYRSDFCC4Z56
-		if ((isset($_REQUEST["token"]) && isset($_REQUEST["PayerID"]) && strlen($_REQUEST["token"]) == 20 && strlen($_REQUEST["PayerID"]) == 13 && !$_REQUEST["paypalRedirect"]) || (isset($_REQUEST["couponSubmitNonce"]) && wp_verify_nonce($_REQUEST['couponSubmitNonce'], plugin_basename(__FILE__))))
+		if ( ( isset( $_REQUEST["token"] ) && isset( $_REQUEST["PayerID"] ) && strlen( $_REQUEST["token"] ) == 20 && strlen( $_REQUEST["PayerID"] ) == 13 && !$_REQUEST["paypalRedirect"] ) 
+		  || ( isset( $_REQUEST["couponSubmitNonce"] ) && wp_verify_nonce( $_REQUEST['couponSubmitNonce'], WP_EVENT_TICKETING_BASE_NAME ) ) )
 		{
 			if(!isset($_REQUEST['couponSubmitNonce']))
 			{
@@ -2021,8 +2036,8 @@ echo '</div>';
 				$total = $order["total"];
 				$item = $order["items"];
 
-				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/nvp.php');
-				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/paypal.php');
+				include WP_EVENT_TICKETING_LIB_DIR . 'nvp.php';
+				include WP_EVENT_TICKETING_LIB_DIR . 'paypal.php';
 				$p = $o["paypalInfo"];
 
 				$method = "DoExpressCheckoutPayment";
@@ -2215,7 +2230,7 @@ echo '</div>';
 				}
 			}
 			echo '<form action="" method="post">';
-			echo '<input type="hidden" name="packagePurchaseNonce" id="packagePurchaseNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+			echo '<input type="hidden" name="packagePurchaseNonce" id="packagePurchaseNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />';
 			echo '<div>Please enter a name and email address for your confirmation and tickets</div>';
 			echo '<ul class="ticketPurchaseInfo"><li><label for="packagePurchaseName">Name:</label><input name="packagePurchaseName" size="35" value="' . $_REQUEST["packagePurchaseName"] . '"></li><li><label for="packagePurchaseEmail">Email:</label><input name="packagePurchaseEmail" size="35" value="' . $_REQUEST["packagePurchaseEmail"] . '"></li></ul>';
 			echo '<div id="packages">';
@@ -2282,7 +2297,7 @@ echo '</div>';
 	function ticketEditScreen()
 	{
 		//ticket form recieved
-		if (wp_verify_nonce($_POST['ticketInformationNonce'], plugin_basename(__FILE__)))
+		if ( wp_verify_nonce( $_POST['ticketInformationNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 			$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 			//echo '<pre>'.print_r($_REQUEST,true).'</pre>';
@@ -2316,7 +2331,7 @@ echo '</div>';
 				//echo '<pre>'.print_r($ticket,true).'</pre>';
 				echo '<form name="ticketInformation" method="post" action="">';
 				echo '<table>';
-				echo '<input type="hidden" name="ticketInformationNonce" id="ticketInformationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+				echo '<input type="hidden" name="ticketInformationNonce" id="ticketInformationNonce" value="' . wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME ) . '" />';
 				echo '<input type="hidden" name ="tickethash" value="' . $ticketHash . '" />';
 				echo '<input type="hidden" name ="packagehash" value="' . $packageHash . '" />';
 				foreach ($ticket->ticketOptions as $option)
@@ -2339,7 +2354,7 @@ echo '</div>';
 		$o = get_option("eventTicketingSystem");
 		
 		//check order and build for later retrieval
-		if (isset($_POST['packagePurchaseNonce']) && wp_verify_nonce($_POST['packagePurchaseNonce'], plugin_basename(__FILE__)))
+		if ( isset( $_POST['packagePurchaseNonce'] ) && wp_verify_nonce( $_POST['packagePurchaseNonce'], WP_EVENT_TICKETING_BASE_NAME ) )
 		{
 
 			if (!check_email_address($_REQUEST["packagePurchaseEmail"]))
@@ -2428,7 +2443,7 @@ echo '</div>';
 				//do something here
 				if($total <= 0)
 				{
-					$couponSubmitNonce = wp_create_nonce(plugin_basename(__FILE__));
+					$couponSubmitNonce = wp_create_nonce( WP_EVENT_TICKETING_BASE_NAME );
 					
 					add_option('coupon_' . $couponSubmitNonce, array("items" => $item, "email" => $_REQUEST["packagePurchaseEmail"], "name" => $_REQUEST["packagePurchaseName"]));
 					header('Location: ' . get_permalink() .(strstr(get_permalink(), '?') ? '&amp;' : '?'). 'couponSubmitNonce=' . $couponSubmitNonce);
@@ -2436,8 +2451,8 @@ echo '</div>';
 				}
 				
 				//looks like we got a submit with some values, let's redirect to paypal
-				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/nvp.php');
-				include(WP_PLUGIN_DIR . '/' . plugin_basename(dirname(__FILE__)) . '/lib/paypal.php');
+				include WP_EVENT_TICKETING_LIB_DIR . 'nvp.php';
+				include WP_EVENT_TICKETING_LIB_DIR . 'paypal.php';
 				$returnsite = get_permalink();
 				
 				$p = $o["paypalInfo"];
@@ -2511,351 +2526,6 @@ echo '</div>';
 	}
 }
 
-class arbitrarySort
-{
-	public $sort;
-
-	public function __construct($sort)
-	{
-		$this->sort = $sort;
-	}
-
-	public function cmp($a, $b)
-    {
-        if (is_numeric($a[$this->sort]) && is_numeric($b[$this->sort]))
-        {
-			if ($a[$this->sort] == $b[$this->sort])
-			{
-				return 0;
-			}
-			return ($a[$this->sort] < $b[$this->sort]) ? -1 : 1;
-    	}
-		else
-		{
-			return strcasecmp($a[$this->sort], $b[$this->sort]);
-		}
-	}
-}
-
-class ticketOption
-{
-	public $displayName;
-	public $displayType;
-	public $options;
-	public $required;
-	public $value;
-	public $optionId;
-
-	function __construct($display = NULL, $displayType = NULL, $options = NULL, $required = true)
-	{
-		$this->displayName = $display;
-		$this->displayType = $displayType;
-		$this->options = $options;
-		$this->required = $required;
-	}
-
-	public function displayForm()
-	{
-		ob_start();
-		switch ($this->displayType)
-		{
-			case "text":
-				echo '<input class="ticket-option-text" id="text-' . $this->optionId . '" name="ticketOption[' . $this->optionId . ']" value="' . $this->value . '">';
-				break;
-			case "checkbox":
-				echo '<input class="ticket-option-checkbox" id="checkbox-' . $this->optionId . '" name="ticketOption[' . $this->optionId . ']" ' . ($this->value ? "CHECKED" : "") . '>';
-				break;
-			case "dropdown":
-				echo '<select class="ticket-option-dropdown" id="dropdown-' . $this->optionId . '" name="ticketOption[' . $this->optionId . ']">';
-				foreach ($this->options as $o)
-				{
-					echo '<option ' . ($o == $this->value ? "selected" : "") . '>' . $o . '</option>';
-				}
-				echo '</select>';
-				break;
-			case "multidropdown":
-				echo '<select size=5 MULTIPLE class="ticket-option-multidropdown" id="multidropdown-' . $this->optionId . '" name="ticketOption[' . $this->optionId . '][]">';
-				foreach ($this->options as $o)
-				{
-					echo '<option ' . (in_array($o,$this->value) ? "selected" : "") . '>' . $o . '</option>';
-				}
-				echo '</select>';
-				break;
-		}
-		return ob_get_clean();
-	}
-
-	public function displayValue()
-	{
-		echo $this->value;
-	}
-
-	public function display()
-	{
-		echo $this->displayName;
-	}
-
-	public function setOptionId($id)
-	{
-		$this->optionId = $id;
-	}
-}
-
-class ticket
-{
-	public $ticketName;
-	public $ticketOptions;
-	public $ticketId;
-	public $final;
-	public $soldTime;
-
-	function __construct($ticketOptions = array())
-	{
-		$this->ticketOptions = $ticketOptions;
-		$this->final = false;
-	}
-
-	function __clone()
-	{
-		foreach ($this->ticketOptions as $k => $v)
-		{
-			$this->ticketOptions[$k] = clone $v;
-		}
-	}
-
-	public function displayName()
-	{
-		return ($this->ticketName == '' ? 'Unnamed' : $this->ticketName);
-	}
-
-	public function displayFull()
-	{
-		echo '<div id="eventTicket">';
-		echo '<div class="ticketName">' . ($this->ticketName == '' ? 'Unnamed' : $this->ticketName) . '</div>';
-		/*
-				  echo '<div>';
-				  if(is_array($this->ticketOptions))
-				  {
-					  foreach ($this->ticketOptions as $o)
-					  {
-						  echo '<div>'.$o->displayName.'</div>';
-					  }
-				  }
-				  echo '</div>';
-		*/
-		echo '</div>';
-
-	}
-
-	public function displayForm()
-	{
-		echo '<div id="eventTicket">';
-		echo '<div class="ticketName">Ticket Display Name&nbsp;<input name="ticketDisplayName" type="text" value="' . $this->ticketName . '"></div>';
-		echo '<div>';
-		//echo '<h3>Ticket Options</h3>';
-		if (is_array($this->ticketOptions))
-		{
-
-			echo "<table class='widefat'>";
-			echo "<thead>";
-			echo "<tr>";
-			echo "<th>New Ticket Options</th>";
-			echo "<th>Actions</th>";
-			echo "<tbody>";
-			foreach ($this->ticketOptions as $o)
-			{
-				echo "<tr>";
-				echo '<td>' . $o->displayName . '</td>';
-				echo '<td><a href="#" onclick="javascript:document.ticketOptionAddToTicket.del.value=\'' . $o->optionId . '\'; document.ticketOptionAddToTicket.submit();return false;">Delete</a></td>';
-			}
-
-			echo "</tr>";
-			echo "</tbody>";
-			echo "</tr>";
-			echo "</thead>";
-			echo "</table>";
-			echo "<br />";
-
-		}
-		echo '</div>';
-	}
-
-	public function addOption($option)
-	{
-		$this->ticketOptions[$option->optionId] = $option;
-	}
-
-	public function delOption($optionId)
-	{
-		unset($this->ticketOptions[$optionId]);
-	}
-
-	public function setDisplayName($display)
-	{
-		$this->ticketName = $display;
-	}
-
-	public function setTicketId($id)
-	{
-		$this->ticketId = $id;
-	}
-	public function setSoldTime($timeStamp)
-	{
-		$this->soldTime = $timeStamp;
-	}
-}
-
-class package
-{
-	public $packageId;
-	public $packageName;
-	public $tickets;
-	public $ticketQuantity;
-	public $expireStart;
-	public $expireEnd;
-	public $price;
-	public $packageQuantity;
-	public $packageDescription;
-	public $orderDetails;
-	public $coupon;
-	public $active;
-
-	function __construct($tickets = array())
-	{
-		$this->tickets = $tickets;
-		$this->active = false;
-	}
-
-	public function displayForm()
-	{
-		echo '<div id="eventPackage" class="wrap">';
-		echo '<h2>'.$this->displayName().'</h2>';
-		echo '<div class="packageName">Package Display Name<input type="text" name="packageDisplayName" value="' . $this->packageName . '"></div>';
-		echo '<div class="packageDescription">Package Description<textarea name="packageDescription">' . $this->packageDescription . '</textarea></div>';
-		echo '<div>';
-		echo '<h2>Included Tickets</h2>';
-		if (is_array($this->tickets))
-		{
-			echo '<ul>';
-			foreach ($this->tickets as $o)
-			{
-				echo '<li>';
-				echo $o->displayName() . ' X <input name="packageTicketQuantity" size="2" type="text" value="' . $this->ticketQuantity . '">&nbsp;&nbsp;';
-				echo '<a href="#" onclick="javascript:document.ticketAddToPackage.del.value=\'' . $o->ticketId . '\'; document.ticketAddToPackage.submit();return false;">Reset</a>';
-				echo '</li>';
-			}
-			echo '</ul>';
-		}
-		echo '<h2>Package Expiration Dates</h2>';
-		echo '<div>Start: <input type="text" name="packageExpireStart" id="expireStart" value="' . $this->expireStart . '"> End: <input type="text" name="packageExpireEnd" id="expireEnd" value="' . $this->expireEnd . '"></div>';
-		echo '</div>';
-		echo '<h2>Package Cost</h2>';
-		echo '<div>'.eventTicketingSystem::getCurrencySymbol().'<input type="text" name="packagePrice" value="' . $this->price . '" size="5"></div>';
-		//echo '</div>';
-		echo '<h2>Package Quantity</h2>';
-		echo '<div>Quantity: <input type="text" name="packageQuantity" value="' . $this->packageQuantity . '" size="3"><br /><p style="font-style: italic;">How many of this package to sell? Leave blank for no limit</p></div>';
-		echo '</div>';
-	}
-
-	public function setActive($active)
-	{
-		if($active && $this->validatePackage())
-		{
-			$this->active = true;
-		}
-		else
-		{
-			$this->active = false;
-		}
-	}
-
-	public function validatePackage()
-	{
-		if(count($this->tickets) == 0)
-			return false;
-		
-		return true;
-	}
-
-	public function setPackageId($id)
-	{
-		$this->packageId = $id;
-	}
-
-	public function setExpire($dates)
-	{
-		$this->expireStart = $dates["start"];
-		$this->expireEnd = $dates["end"];
-	}
-
-	public function displayName()
-	{
-		return ($this->packageName == '' ? 'Unnamed' : $this->packageName);
-	}
-
-	public function setDisplayName($display)
-	{
-		$this->packageName = $display;
-	}
-
-	public function setPackageDescription($desc)
-	{
-		$this->packageDescription = $desc;
-	}
-
-	public function addTicket($ticket)
-	{
-		$this->tickets[$ticket->ticketId] = $ticket;
-	}
-
-	public function setTicketQuantity($num)
-	{
-		$this->ticketQuantity = $num;
-	}
-
-	public function setPackagePrice($price)
-	{
-		$this->price = $price;
-	}
-
-	public function setPackageQuantity($q)
-	{
-		$this->packageQuantity = $q;
-	}
-
-	public function delTicket($ticketId)
-	{
-		unset($this->tickets[$ticketId]);
-		
-		if(count($this->tickets) == 0)
-		{
-			$this->setActive(false);
-		}
-	}
-
-	public function validDates()
-	{
-		if (current_time('timestamp') > strtotime($this->expireStart) && current_time('timestamp') < strtotime($this->expireEnd." +1 day"))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	public function setOrderDetails($p)
-	{
-		$this->orderDetails = $p;
-	}
-	
-	public function setCoupon($coupon)
-	{
-		$this->coupon = $coupon;
-	}
-}
-
 function check_email_address($email)
 {
 	// First, we check that there's one @ symbol, and that the lengths are right
@@ -2891,5 +2561,3 @@ function check_email_address($email)
 	}
 	return true;
 }
-
-?>
