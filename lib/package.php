@@ -1,5 +1,7 @@
 <?php
 
+require_once WP_EVENT_TICKETING_LIB_DIR . 'ticket.php';
+
 class package
 {
 	public $packageId;
