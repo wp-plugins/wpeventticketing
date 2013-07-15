@@ -3,13 +3,19 @@ Contributors: 9seeds, vegasgeek, jrfoell, toddhuish, stastic
 Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
-Tested up to: 3.5.1
+Tested up to: 3.5.2
 Stable tag: 1.3.3
 License: GPLv2 or later
 
 Manage and sell ticket for an event.
 
 == Description ==
+
+<strong>Early Beta Testers Wanted!</strong>
+We are in the home stretch on version 2.0 and could use some assistance.
+
+* If you would like to try out the new version, you can <a href="https://github.com/9seeds/wp-event-ticketing/tree/2.0">download it from github</a> DO NOT USE THIS ON A PRODUCTION SITE. It's still an early beta and not ready for prime time. If you find any errors in the beta, please feel free to submit them on Github, or at <a href="http://support.9seeds.com/">support.9seeds.com</a>
+* We are actively looking for people who have a current event running who are willing to send us a database dumb so we can test the upgrade/conversion script with as many datasets as possible. If you're interested, please <a href="http://9seeds.com/contact/">contact us</a>.
 
 The WPEventTicketing plugin makes it easy to sell tickets to an event directly from your WordPress website.
 
