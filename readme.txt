@@ -1,5 +1,5 @@
 === WP Event Ticketing ===
-Contributors: 9seeds, vegasgeek, jrfoell, toddhuish, stastic
+Contributors: vegasgeek, jrfoell, toddhuish, stastic
 Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
@@ -7,104 +7,12 @@ Tested up to: 3.5.2
 Stable tag: 1.3.3
 License: GPLv2 or later
 
-Manage and sell ticket for an event.
+This plugin is no longer being maintained or supported.
 
 == Description ==
+As of February 5th, this plugin is no longer being maintained by the author. In addition, it is no longer being supported. We are working to get it removed from the WordPress repository.
 
-<strong>Early Beta Testers Wanted!</strong>
-We are in the home stretch on version 2.0 and could use some assistance.
-
-* If you would like to try out the new version, you can <a href="https://github.com/9seeds/wp-event-ticketing/tree/2.0">download it from github</a> DO NOT USE THIS ON A PRODUCTION SITE. It's still an early beta and not ready for prime time. If you find any errors in the beta, please feel free to submit them on Github, or at <a href="http://support.9seeds.com/">support.9seeds.com</a>
-* We are actively looking for people who have a current event running who are willing to send us a database dumb so we can test the upgrade/conversion script with as many datasets as possible. If you're interested, please <a href="http://9seeds.com/contact/">contact us</a>.
-
-The WPEventTicketing plugin makes it easy to sell tickets to an event directly from your WordPress website.
-
-Contains the following features:
-
-* Collect payments via paypal.
-* Set total attendance limit.
-* Multiple ticket types. For example, ticket type A includes a t-shirt while ticket type B does not.
-* Custom ticket options. This allows you to decide what information you want ticket purchasers to provide. For example, name, address, shirt size, twitter handle, etc...
-* Create ticket packages. For example, early bird specials. Ticket packages can be used to give a discount to people who place their order during a certain time.
-* Create coupons to give discounts to individuals.
-* Send email to purchaser upon order completion.
-* Reporting page shows total sales and income broken down by package, coupons used and tickets sold.
-* Export attendee data to a CSV file.
-* Display a list of event attendees using a shortcode
-
-View a <a href="http://vimeo.com/18491170">walk-through video</a> that explains how to setup WP Event Ticketing.
-
-
-== Installation ==
-
-1. Upload `wpeventticketing` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in your WordPress dashboard
-3. Get a Paypal API Signature (<a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_NVPAPIBasics#id084E30I30RO">Instructions can be found here</a>)
-4. Set up your Ticket Options
-5. Create a new Ticket and select which ticket options to include
-6. Create a Ticket Package
-7. Set your max attendance
-8. Enter your Paypal credentials
-9. Set up your email messaging
-10. Create a blank page and add the shortcode `[wpeventticketing]`
-
-(*optionally*)
-11. Create a blank page and add the shortcode `[wpeventticketingattendee]`
-12. Add something like the following to your stylesheet
-`.event-attendee {
-    width: 45%;
-}
-.event-attendee.even {
-    float: right;
-}
-.event-attendee.odd {
-    float: left;
-}
-.event-attendee .attendee-gravatar {
-    float: left;
-}
-.event-attendee .attendee-gravatar img{
-    width: 48px;
-    height: 48px;
-}`
-
-== Frequently Asked Questions ==
-
-= How come my tickets aren't showing up for sale on the site? =
-
-The issue is almost always one of 3 things. <a href="https://vimeo.com/29543852">Watch this video</a> and it will explain all 3 scenarios.
-
-= Can I remove the coupon field from the registration page? =
-
-The easiest way to remove the coupon field is to hide it with the following CSS:
-`.coupon {
-display: none;
-}`
-
-= The data entry fields are showing white text in the form fields. How do I fix that? =
-This typically happens when you are using a theme with a dark background and white text. The theme designer didn't add a style to force the input fields to use a dark font. You can add the following code to your style.css file:
-`#eventTicketing ul.ticketPurchaseInfo li input,
-#eventTicketing tr.coupon input[name="couponCode"] {
-color: #000!important;
-}`
-
-= Does the plugin create printable tickets? =
-
-Not at this time. But, that's a feature we plan to add in the future.
-
-= Can I run multiple events at one time? =
-
-Not at this time. But, that's a feature we plan to add in the future.
-
-== Screenshots ==
-
-1. Reporting page shows total earnings, coupons and ticket sales. Graph shows breakdown of tickets available and sold.
-2. Ticket Options are used to collect information from event attendees.
-3. Select which options to include for each ticket type.
-4. Set all the options for a package.
-5. Create coupons to give buyers a flat rate or percentage discount on their purchase.
-6. Manage the messaging that gets displayed after a ticket purchase and the email to the purchaser.
-
+If you are interested in taking over management of this plugin, please contact info@9seeds.com
 
 == Changelog ==
 = 1.3.3 =
