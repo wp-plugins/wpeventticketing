@@ -7,12 +7,10 @@ Tested up to: 3.5.2
 Stable tag: 1.3.3
 License: GPLv2 or later
 
-This plugin is no longer being maintained or supported.
+Sell tickets for an event directly from your WordPress website.
 
 == Description ==
-As of February 5th, this plugin is no longer being maintained by the author. In addition, it is no longer being supported. We are working to get it removed from the WordPress repository.
-
-If you are interested in taking over management of this plugin, please contact info@9seeds.com
+WP Event Ticketing makes it easy for you to sell tickets for a single event directly from your WordPress website.
 
 == Changelog ==
 = 1.3.3 =
