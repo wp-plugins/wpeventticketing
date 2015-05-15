@@ -4,7 +4,7 @@ Plugin Name: WP Event Ticketing
 Plugin URI: http://9seeds.com/plugins/
 Description: The WP Event Ticketing plugin makes it easy to sell and manage tickets for your event.
 Author: 9seeds.com
-Version: 1.3.2
+Version: 1.3.4
 Author URI: http://9seeds.com/
 */
 
@@ -537,7 +537,7 @@ class eventTicketingSystem
 		echo '<input type="hidden" name="eventManipulationNonce" id="eventManipulationNonce" value="' . wp_create_nonce(plugin_basename(__FILE__)) . '" />';
 		echo '<table class="widefat">';
 		echo '<tbody>';
-		echo '<tr><td>Turn registration on and off with this button. Registration is currently <strong>'.($o['eventTicketingStatus'] ? 'On' : 'Off').'</strong><br /><br /><input class="button-primary" type="button" value="Start/Stop Registration" onClick="javascript:document.eventManipulationForm.eventStatusSwitch.value=\'1\';document.eventManipulationForm.submit(); return false;"></td></tr>';
+		echo '<tr><td>Registration is currently <span style="display:inline-block;background:'.($o['eventTicketingStatus'] ? '#0c0' : '#c00').';width: 50px;text-align: center;color: white;">'.($o['eventTicketingStatus'] ? 'On' : 'Off').'</span><br /><br /><input class="button-primary" type="button" value="'.($o['eventTicketingStatus'] ? 'Close' : 'Open').' Registration" onClick="javascript:document.eventManipulationForm.eventStatusSwitch.value=\'1\';document.eventManipulationForm.submit(); return false;"></td></tr>';
 		echo '<tr><td>Reset event. <em>Warning</em>: <strong>Clicking the reset button will wipe all your sold tickets, coupons, attendee list and reporting!</strong> This resets the plugin so you can create a new event. Uncheck the boxes to save ticket, package and ticket option definitions<br /><br /><input class="button-primary" type="button" value="Reset Event" onClick="javascript:if(confirm(\'Are you sure you want to reset the event? All event data will be wiped and reset and this cannot be undone\')) { document.eventManipulationForm.eventReset.value=\'1\'; document.eventManipulationForm.submit(); } else { return false; }">
 			<table>
 			<tr><th colspan="2">Also Delete</th></tr>

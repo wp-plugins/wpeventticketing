@@ -1,10 +1,10 @@
 === WP Event Ticketing ===
-Contributors: vegasgeek, jrfoell, toddhuish, stastic
+Contributors: vegasgeek, jrfoell, toddhuish, 9seeds
 Donate Link: http://9seeds.com/donate/
 Tags: event, events, ticket, tickets, ticketing, attend, attendee, attending, attendance, conference, wordcamp, admission, entry
 Requires at least: 2.8
-Tested up to: 3.5.2
-Stable tag: 1.3.3
+Tested up to: 4.2.2
+Stable tag: 1.3.4
 License: GPLv2 or later
 
 Sell tickets for an event directly from your WordPress website.
@@ -13,6 +13,9 @@ Sell tickets for an event directly from your WordPress website.
 WP Event Ticketing makes it easy for you to sell tickets for a single event directly from your WordPress website.
 
 == Changelog ==
+= 1.3.4 =
+* Fix SSL v3 paypal errors
+
 = 1.3.3 =
 * Update link for Paypal instructions
 * Add new FAQs
